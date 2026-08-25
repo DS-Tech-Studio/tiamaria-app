@@ -31,7 +31,7 @@ import { OrdersModule } from './modules/orders/orders.module';
         password: String(configService.get<string>('DB_PASSWORD', '')),
         database: configService.get<string>('DB_NAME', 'tiamaria_db'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
+        synchronize: false,
         autoLoadEntities: true,
       }),
     }),
