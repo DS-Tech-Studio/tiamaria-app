@@ -87,6 +87,19 @@ apps/frontend/.env.production.local
 apps/backend/dist/
 *.tsbuildinfo
 
-# Entornos del backend
+# Archivos .env reales con credenciales
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
 apps/backend/.env
-apps/backend/.env.*
+apps/backend/.env.local
+apps/backend/.env.development
+
+# Permitir explícitamente archivos .env.example
+!.env.example
+!apps/backend/.env.example
