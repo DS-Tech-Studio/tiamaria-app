@@ -1,0 +1,92 @@
+# ==============================================================================
+# 1. COMÚN / GENERAL (Raíz y compartido)
+# ==============================================================================
+
+# Dependencias y paquetes
+node_modules/
+.pnp
+.pnp.js
+
+# Variables de entorno globales y secretos
+.env
+.env.*
+!.env.example
+
+# Logs y depuración
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Archivos del Sistema Operativo
+.DS_Store
+Thumbs.db
+
+# Editores e IDEs
+.idea/
+.project
+.classpath
+.c9/
+.settings/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.launch
+*.sublime-workspace
+
+# VSCode (ignora configuración temporal de usuario, conserva ajustes del workspace)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Archivos temporales y de runtime
+.temp/
+.tmp/
+pids/
+*.pid
+*.seed
+*.pid.lock
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Pruebas y Cobertura
+coverage/
+.nyc_output/
+
+
+# ==============================================================================
+# 2. FRONTEND (apps/frontend - Vite / React / Web)
+# ==============================================================================
+
+# Compilación y builds
+apps/frontend/dist/
+apps/frontend/dist-ssr/
+dist/
+dist-ssr/
+build/
+
+# Entornos y archivos locales de Vite
+apps/frontend/.env.local
+apps/frontend/.env.development.local
+apps/frontend/.env.test.local
+apps/frontend/.env.production.local
+*.local
+
+
+# ==============================================================================
+# 3. BACKEND (apps/backend - NestJS / API)
+# ==============================================================================
+
+# Salida de compilación y caché de TypeScript
+apps/backend/dist/
+*.tsbuildinfo
+
+# Entornos del backend
+apps/backend/.env
+apps/backend/.env.*
