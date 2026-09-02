@@ -102,4 +102,11 @@ export class UsersService {
     return this.userRepository.save(user);
     }
 
+    async findByEmail(email: string): Promise<User | null> {
+      return this.userRepository.findOne({ where: { email } });
+    }
+
+    async updateLastLogin(id: string): Promise<void> {
+      await this.userRepository.update(id, { last_login_at: new Date() });
+    }
 }
