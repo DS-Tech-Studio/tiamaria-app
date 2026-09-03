@@ -2,7 +2,10 @@ import { Controller, Get, Post, Body, Patch, Param, ParseUUIDPipe } from '@nestj
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 
+@Roles('ADMIN') // <--- Solo los usuarios con rol ADMIN pueden acceder a cualquier ruta de este controlador
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -30,9 +33,8 @@ export class UsersController {
     return this.usersService.update(id, updateUserDto);
   }
 
- @Patch(':id/toggle-status')
- toggleStatus(
-   @Param('id', ParseUUIDPipe) id: string) {
-   return this.usersService.toggleStatus(id);
- }
+  @Patch(':id/toggle-status')
+  toggleStatus(@Param('id', ParseUUIDPipe) id: string) {
+    return this.usersService.toggleStatus(id);
+  }
 }
