@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from '../users/users.module';
@@ -11,9 +12,18 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   imports: [
     UsersModule,
     PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'SecretKeySuperSegura123!',
-      signOptions: { expiresIn: '8h' },
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_SECRET');
+        if (!secret) {
+          throw new Error('FATAL: Variable JWT_SECRET no encontrada en el .env');
+        }
+        return {
+          secret,
+          signOptions: { expiresIn: '8h' },
+        };
+      },
     }),
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
