@@ -12,6 +12,7 @@ import { Product } from '../products/entities/product.entity';
 import { Client } from '../clients/entities/client.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { User, UserRole } from '../users/entities/user.entity';
+import { NotificationsGateway } from '../../notifications/notifications.gateway';
 
 @Injectable()
 export class OrdersService {
@@ -19,6 +20,7 @@ export class OrdersService {
     private readonly dataSource: DataSource,
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
+    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   /**
@@ -102,8 +104,13 @@ export class OrdersService {
       // Commit de la transacción SQL
       await queryRunner.commitTransaction();
 
+      const createdOrder = await this.findOne(savedOrder.id);
+
+      this.notificationsGateway.emitOrderCreated(createdOrder);
+
+
       // Devolver la orden con sus relaciones cargadas
-      return await this.findOne(savedOrder.id);
+      return createdOrder;
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
