@@ -12,7 +12,8 @@ import { Product } from '../products/entities/product.entity';
 import { Client } from '../clients/entities/client.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { User, UserRole } from '../users/entities/user.entity';
-import { NotificationsGateway } from '../../notifications/notifications.gateway';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
+import { FirebaseService } from '../notifications/firebase.service';
 
 @Injectable()
 export class OrdersService {
@@ -21,6 +22,7 @@ export class OrdersService {
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
     private readonly notificationsGateway: NotificationsGateway,
+    private readonly firebaseService: FirebaseService,
   ) {}
 
   /**
@@ -105,9 +107,20 @@ export class OrdersService {
       await queryRunner.commitTransaction();
 
       const createdOrder = await this.findOne(savedOrder.id);
-
+      
+      // 1. Emitir evento por WebSockets
       this.notificationsGateway.emitOrderCreated(createdOrder);
-
+      
+      // 2. Enviar notificación Push mediante Firebase FCM (si existe un token configurado)
+      const adminFcmToken = process.env.ADMIN_FCM_TOKEN;
+      if (adminFcmToken) {
+        await this.firebaseService.sendPushNotification(
+          adminFcmToken,
+          '¡Nuevo Pedido Creado!',
+          `Se ha registrado el pedido ${createdOrder.code} por $${createdOrder.total_amount}`,
+          { orderId: createdOrder.id },
+        );
+      }
 
       // Devolver la orden con sus relaciones cargadas
       return createdOrder;

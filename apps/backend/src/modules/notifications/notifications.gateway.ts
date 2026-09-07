@@ -6,7 +6,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
-import { Order } from '../modules/orders/entities/order.entity';
+import { Order } from '../orders/entities/order.entity';
 
 @WebSocketGateway({
   cors: {
