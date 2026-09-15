@@ -17,7 +17,7 @@ export const RoleGuard = ({ allowedRoles, children, fallback }: RoleGuardProps) 
       return <>{fallback}</>;
     }
 
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   return <>{children}</>;
