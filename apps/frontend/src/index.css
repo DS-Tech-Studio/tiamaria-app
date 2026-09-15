@@ -1,65 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #fff7ed;
-  --color-brand-100: #ffedd5;
-  --color-brand-500: #c56a2d;
-  --color-brand-600: #a84d1c;
-  --color-brand-700: #873916;
-  --color-ink-950: #231512;
-  --color-ink-900: #34201a;
-  --color-ink-700: #6d5146;
-  --color-ink-500: #9b8278;
-  --color-line: #eadfd8;
-  --color-canvas: #fcfaf8;
-  --font-display: "Lora", Georgia, serif;
-  --font-sans: "Nunito", "Trebuchet MS", sans-serif;
-  --shadow-soft: 0 18px 50px rgb(65 32 18 / 0.1);
+  --color-guinda: #590209;
+  --color-rojizo: #752002;
+  --color-caramelo: #D57642;
+  --color-rojo: #FF0000;
+  --color-profundo: #240103;
+
+  --font-serif: 'Lora', serif;
+  --font-sans: 'Nunito', sans-serif;
 }
 
-@layer base {
-  :root {
-    font-family: var(--font-sans);
-    color: var(--color-ink-950);
-    background: var(--color-canvas);
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-  }
-
-  * {
-    border-color: var(--color-line);
-  }
-
-  body {
-    min-width: 320px;
-    min-height: 100vh;
-    margin: 0;
-    background:
-      radial-gradient(circle at 10% 0%, rgb(255 237 213 / 0.7), transparent 32rem),
-      var(--color-canvas);
-  }
-
-  button,
-  input,
-  textarea,
-  select {
-    font: inherit;
-  }
-}
-
-@layer components {
-  .surface {
-    border: 1px solid var(--color-line);
-    border-radius: 1.25rem;
-    background: rgb(255 255 255 / 0.82);
-    box-shadow: var(--shadow-soft);
-  }
-
-  .eyebrow {
-    color: var(--color-brand-700);
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
+body {
+  background-color: var(--color-profundo);
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  min-height: 100vh;
 }
