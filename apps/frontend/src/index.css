@@ -1,19 +1,48 @@
 @import "tailwindcss";
 
 @theme {
+  /* Brand palette */
+  --color-profundo: #240103;
   --color-guinda: #590209;
   --color-rojizo: #752002;
-  --color-caramelo: #D57642;
-  --color-rojo: #FF0000;
-  --color-profundo: #240103;
+  --color-caramelo: #d57642;
+  --color-rojo: #ff0000;
+  --color-borgoña: #500824;
+  --color-fondo-intermedio: #3b0509;
+  --color-blanco: #ffffff;
 
+  /* Typography */
   --font-serif: 'Lora', serif;
   --font-sans: 'Nunito', sans-serif;
 }
 
+/* Semantic color utilities */
+.bg-borgoña {
+  background-color: var(--color-borgoña);
+}
+
+.hover\:bg-borgoña:hover {
+  background-color: var(--color-borgoña);
+}
+
+.bg-app {
+  background-color: var(--color-profundo);
+  background-image: radial-gradient(
+      circle at 50% 100%,
+      color-mix(in srgb, var(--color-rojizo) 28%, transparent),
+      transparent 45%
+    ),
+    linear-gradient(
+      145deg,
+      var(--color-profundo) 0%,
+      var(--color-fondo-intermedio) 52%,
+      var(--color-profundo) 100%
+    );
+}
+
 body {
   background-color: var(--color-profundo);
-  color: #FFFFFF;
+  color: var(--color-blanco);
   font-family: var(--font-sans);
   min-height: 100vh;
 }
