@@ -55,12 +55,18 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#fffaf5] px-4 py-8 text-profundo sm:px-6">
-      <section className="w-full max-w-[31rem] overflow-hidden rounded-2xl border border-[#eadbd3] bg-white shadow-[0_20px_60px_rgba(36,1,3,0.08)]">
-        <div className="h-2 bg-guinda" aria-hidden="true" />
+    <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(213,118,66,0.18),_transparent_28%),linear-gradient(180deg,#f7f2ef_0%,#f4eae5_32%,#efe0d9_100%)] px-4 py-8 text-profundo sm:px-6">
+      <section className="w-full max-w-[31rem] overflow-hidden rounded-[1.7rem] border border-[#eadbd3] bg-[#fffdfc] shadow-[0_24px_65px_rgba(36,1,3,0.09)] ring-1 ring-[#f0ddcf]">
+        <div className="h-2 bg-[linear-gradient(90deg,#590209_0%,#752002_42%,#D57642_100%)]" aria-hidden="true" />
         <div className="px-6 pb-8 pt-10 sm:px-12 sm:pb-12 sm:pt-12">
           <div className="mb-8 flex justify-center">
-            <img className="h-28 w-28 object-contain sm:h-32 sm:w-32" src={logo} alt="Tía Mari Artesanal" />
+            <div className="relative flex items-center justify-center">
+              <div className="absolute inset-[-18px] rounded-full bg-[conic-gradient(from_0deg,rgba(213,118,66,0.65),rgba(255,255,255,0.12),rgba(89,2,9,0.55),rgba(213,118,66,0.65))] opacity-90 blur-[2px] animate-[spin_12s_linear_infinite]" />
+              <div className="absolute inset-[-10px] rounded-full border border-[#D57642]/40 bg-white/20 shadow-[0_0_28px_rgba(213,118,66,0.18)]" />
+              <div className="relative rounded-full border-4 border-[#D57642]/20 bg-[#fff8f2] p-3 shadow-[0_12px_30px_rgba(213,118,66,0.14)]">
+                <img className="h-24 w-24 object-contain sm:h-28 sm:w-28" src={logo} alt="Tía Mari Artesanal" />
+              </div>
+            </div>
           </div>
           <div className="text-center">
             <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-caramelo">Panel interno</p>
