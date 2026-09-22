@@ -20,8 +20,12 @@ interface OrderNotificationData {
   order?: OrderNotificationData;
 }
 
+// 1. Declaración del Contexto
 const NotificationContext = createContext<NotificationContextProps | undefined>(undefined);
-const SOCKET_URL = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+// 2. Limpieza de URL para remover '/api/v1' si viene en las variables de entorno
+const rawUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const SOCKET_URL = rawUrl.replace(/\/api\/v1\/?$/, '');
 
 function createOrderNotification(payload: OrderNotificationData): NotificationItem {
   const order = payload.order ?? payload;
@@ -44,11 +48,23 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const socket = io(SOCKET_URL, {
-      transports: ['websocket'],
+      transports: ['polling', 'websocket'],
       autoConnect: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
+
+    socket.on('connect', () => {
+      console.log('✅ Conectado a WebSockets con ID:', socket.id);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('❌ Error de conexión en Socket.io:', error.message);
     });
 
     const handleOrderCreated = (payload: OrderNotificationData) => {
+      console.log('🔔 Evento de pedido recibido:', payload);
       setNotifications((current) => [createOrderNotification(payload), ...current]);
     };
 
@@ -56,6 +72,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     socket.on('order_created', handleOrderCreated);
 
     return () => {
+      socket.off('connect');
+      socket.off('connect_error');
       socket.off('order:created', handleOrderCreated);
       socket.off('order_created', handleOrderCreated);
       socket.disconnect();

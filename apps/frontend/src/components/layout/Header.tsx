@@ -80,6 +80,10 @@ export default function Header({ userName, showUsersLink, onLogout }: HeaderProp
             <path strokeLinecap="round" strokeLinejoin="round" d="M2 12h11m0 0-3-3m3 3-3 3" />
           </svg>
         </button>
+      </div>
+
+      {/* Menú de Notificaciones (Campana) - Esquina Superior Derecha */}
+      <div className="fixed right-3 top-3 z-50">
         <NotificationMenu />
       </div>
     </>
