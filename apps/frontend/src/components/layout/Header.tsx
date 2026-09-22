@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import logoTiamari from '../../assets/logo.png';
+import { NotificationMenu } from '../notifications/NotificationMenu';
 
 interface HeaderProps {
   userName?: string;
@@ -79,6 +80,7 @@ export default function Header({ userName, showUsersLink, onLogout }: HeaderProp
             <path strokeLinecap="round" strokeLinejoin="round" d="M2 12h11m0 0-3-3m3 3-3 3" />
           </svg>
         </button>
+        <NotificationMenu />
       </div>
     </>
   );
