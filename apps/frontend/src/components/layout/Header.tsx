@@ -14,7 +14,7 @@ const navigation = [
 ];
 
 const linkStyles = ({ isActive }: { isActive: boolean }) =>
-  `whitespace-nowrap rounded-full px-1.5 py-1 text-[11px] font-medium select-none transition-all duration-200 active:scale-95 sm:px-3 sm:py-1.5 sm:text-sm ${
+  `flex-none whitespace-nowrap rounded-full px-1.5 py-1 text-[10px] font-medium select-none transition-all duration-200 active:scale-95 sm:px-3 sm:py-1.5 sm:text-sm ${
     isActive
       ? 'bg-borgoña text-white shadow-inner'
       : 'text-caramelo hover:bg-borgoña hover:text-white'
@@ -23,8 +23,8 @@ const linkStyles = ({ isActive }: { isActive: boolean }) =>
 export default function Header({ userName, showUsersLink, onLogout }: HeaderProps) {
   return (
     <>
-      <header className="fixed left-1/2 top-14 z-50 w-fit max-w-[calc(100%-1rem)] -translate-x-1/2 sm:top-3 sm:max-w-5xl">
-        <nav className="flex items-center justify-center gap-0 rounded-full border border-rojizo/50 bg-profundo/95 px-1 py-0.5 shadow-2xl backdrop-blur-md sm:gap-1.5 sm:px-2 sm:py-1">
+      <header className="fixed left-1/2 top-14 z-50 w-max max-w-[calc(100%-1rem)] -translate-x-1/2 sm:top-3 sm:max-w-5xl">
+        <nav className="flex w-auto items-center justify-center gap-0 rounded-full border border-rojizo/50 bg-profundo/95 px-1 py-1 shadow-2xl backdrop-blur-md sm:gap-1.5 sm:px-2 sm:py-1">
           <NavLink to="/ordenes" className={linkStyles}>
             Órdenes
           </NavLink>
@@ -39,12 +39,12 @@ export default function Header({ userName, showUsersLink, onLogout }: HeaderProp
             to="/home"
             end
             aria-label="Ir al inicio"
-            className="group flex shrink-0 items-center justify-center rounded-full p-1 transition-transform duration-300 active:scale-90"
+            className="group flex shrink-0 items-center justify-center rounded-full p-0.5 transition-transform duration-300 active:scale-90 sm:p-1"
           >
             <img
               src={logoTiamari}
               alt="Tiamari"
-              className="h-10 w-10 object-contain transition-transform duration-300 group-hover:scale-105 sm:h-12 sm:w-12"
+              className="h-8 w-8 object-contain transition-transform duration-300 group-hover:scale-105 sm:h-12 sm:w-12"
             />
           </NavLink>
 
@@ -56,14 +56,28 @@ export default function Header({ userName, showUsersLink, onLogout }: HeaderProp
         </nav>
       </header>
 
-      <div className="fixed left-2 top-2 z-50 flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-full border border-rojizo/40 bg-guinda/90 px-2 py-1 text-[11px] shadow-lg backdrop-blur-md sm:left-3 sm:top-3 sm:gap-2 sm:px-3 sm:py-1.5 sm:text-sm">
-        <span className="max-w-32 truncate text-caramelo sm:max-w-40">{userName}</span>
+      <div className="fixed left-2 top-2 z-50 flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-xl border border-rojizo/70 bg-guinda/95 px-2 py-1.5 text-[11px] shadow-lg shadow-profundo/40 ring-1 ring-caramelo/15 backdrop-blur-md sm:left-3 sm:top-3 sm:gap-2 sm:px-2.5 sm:py-2 sm:text-sm">
+        <span className="max-w-32 truncate border-r border-rojizo/60 pr-1.5 font-serif font-semibold tracking-wide text-blanco sm:max-w-40 sm:pr-2">
+          {userName}
+        </span>
         <button
           type="button"
           onClick={onLogout}
-          className="whitespace-nowrap text-caramelo transition-colors hover:text-white active:scale-95"
+          aria-label="Cerrar sesión"
+          title="Cerrar sesión"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-rojizo/60 text-caramelo transition-all hover:border-caramelo hover:bg-borgoña hover:text-white active:scale-90 sm:h-7 sm:w-7"
         >
-          Salir
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            className="h-3.5 w-3.5 sm:h-4 sm:w-4"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 5V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2v-1" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2 12h11m0 0-3-3m3 3-3 3" />
+          </svg>
         </button>
       </div>
     </>
