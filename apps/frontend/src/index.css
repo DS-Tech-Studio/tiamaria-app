@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  /* Brand palette */
-  --color-profundo: #240103;
-  --color-guinda: #590209;
-  --color-rojizo: #752002;
+  /* Brand palette ajustada al tono rojizo/vinotinto de la imagen */
+  --color-profundo: #1e0308;
+  --color-guinda: #590219;
+  --color-rojizo: #8a1727;
   --color-caramelo: #d57642;
   --color-rojo: #ff0000;
   --color-borgoña: #500824;
-  --color-fondo-intermedio: #3b0509;
+  --color-fondo-intermedio: #420815;
   --color-blanco: #ffffff;
 
   /* Typography */
@@ -25,24 +25,48 @@
   background-color: var(--color-borgoña);
 }
 
-.bg-app {
-  background-color: var(--color-profundo);
-  background-image: radial-gradient(
-      circle at 50% 100%,
-      color-mix(in srgb, var(--color-rojizo) 28%, transparent),
-      transparent 45%
-    ),
-    linear-gradient(
-      145deg,
-      var(--color-profundo) 0%,
-      var(--color-fondo-intermedio) 52%,
-      var(--color-profundo) 100%
-    );
-}
-
+/* Fondo unificado con el brillo rojizo idéntico a la imagen */
 body {
-  background-color: var(--color-profundo);
+  background-color: #1a0206;
+  background-image: 
+    radial-gradient(
+      circle at 18% 30%,
+      #610f1e 0%,
+      #3d0713 35%,
+      transparent 70%
+    ),
+    radial-gradient(
+      circle at 85% 75%,
+      #450816 0%,
+      transparent 55%
+    );
+  background-attachment: fixed;
+  background-size: cover;
   color: var(--color-blanco);
   font-family: var(--font-sans);
   min-height: 100vh;
+  margin: 0;
+}
+
+.bg-app {
+  background: transparent;
+}
+
+@keyframes slideInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-left {
+  animation: slideInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.delay-150 {
+  animation-delay: 150ms;
 }

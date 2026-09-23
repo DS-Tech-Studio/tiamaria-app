@@ -7,15 +7,20 @@ export default function MainLayout() {
   const { user, logout } = useAuth();
 
   return (
-    <div className="bg-app flex min-h-screen flex-col text-white">
+    <div className="flex h-screen w-full flex-col justify-between overflow-hidden text-white">
       <Header
         userName={user?.fullName}
         showUsersLink={user?.role === 'ADMIN'}
         onLogout={logout}
       />
-      <main className="mx-auto w-full max-w-7xl flex-1 px-6 pb-8 pt-28">
-        <Outlet />
+      
+      {/* El main toma el espacio exacto entre Header y Footer sin empujar la pantalla */}
+      <main className="flex-1 overflow-y-auto pt-24 pb-4">
+        <div className="mx-auto h-full w-full max-w-7xl px-6 flex flex-col">
+          <Outlet />
+        </div>
       </main>
+
       <Footer />
     </div>
   );
