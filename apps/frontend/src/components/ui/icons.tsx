@@ -27,3 +27,17 @@ export const NoteIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-
     <path strokeLinecap="round" strokeLinejoin="round" d="M14 3v5h5M9 13h6M9 17h6" />
   </svg>
 );
+
+export const SearchIcon: React.FC<{ className?: string }> = ({ className = 'h-5 w-5' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path strokeLinecap="round" d="M16 16l4.5 4.5" />
+  </svg>
+);
+
+export const MapPinIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1116 0z" />
+    <circle cx="12" cy="10" r="2.5" />
+  </svg>
+);
