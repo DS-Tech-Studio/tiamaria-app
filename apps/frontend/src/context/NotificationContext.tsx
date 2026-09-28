@@ -1,7 +1,10 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { io } from 'socket.io-client';
-import type { NotificationItem } from '../types/notification.types';
+import type {
+  NotificationItem,
+  SocketOrderNotificationPayload,
+} from '../types/notification.types';
 
 interface NotificationContextProps {
   notifications: NotificationItem[];
@@ -12,14 +15,6 @@ interface NotificationContextProps {
   clearAll: () => void;
 }
 
-interface OrderNotificationData {
-  message?: string;
-  code?: string;
-  client?: { name?: string };
-  items?: Array<{ product?: { name?: string } }>;
-  order?: OrderNotificationData;
-}
-
 // 1. Declaración del Contexto
 const NotificationContext = createContext<NotificationContextProps | undefined>(undefined);
 
@@ -27,7 +22,11 @@ const NotificationContext = createContext<NotificationContextProps | undefined>(
 const rawUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const SOCKET_URL = rawUrl.replace(/\/api\/v1\/?$/, '');
 
-function createOrderNotification(payload: OrderNotificationData): NotificationItem {
+function getClientDisplayName(client?: SocketOrderNotificationPayload['client']) {
+  return client?.business_name || client?.contact_name || client?.name || 'Cliente sin nombre';
+}
+
+function createOrderNotification(payload: SocketOrderNotificationPayload): NotificationItem {
   const order = payload.order ?? payload;
   const productName = order.items?.[0]?.product?.name || 'Varios productos';
 
@@ -35,7 +34,7 @@ function createOrderNotification(payload: OrderNotificationData): NotificationIt
     id: crypto.randomUUID(),
     title: 'Nuevo pedido',
     message: `Pedido ${order.code || 'sin código'} - ${productName}`,
-    clientName: order.client?.name || 'Cliente sin nombre',
+    clientName: getClientDisplayName(order.client),
     orderCode: order.code,
     type: 'NEW_ORDER',
     isRead: false,
@@ -63,7 +62,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       console.error('❌ Error de conexión en Socket.io:', error.message);
     });
 
-    const handleOrderCreated = (payload: OrderNotificationData) => {
+    const handleOrderCreated = (payload: SocketOrderNotificationPayload) => {
       console.log('🔔 Evento de pedido recibido:', payload);
       setNotifications((current) => [createOrderNotification(payload), ...current]);
     };
