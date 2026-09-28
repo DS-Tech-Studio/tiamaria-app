@@ -11,8 +11,10 @@ interface RoleGuardProps {
 
 export const RoleGuard = ({ allowedRoles, children, fallback }: RoleGuardProps) => {
   const { user } = useAuth();
+  const allowedRoleList = allowedRoles.map((role) => role.toUpperCase());
+  const currentRole = user?.role?.toUpperCase();
 
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!user || !allowedRoleList.includes(currentRole ?? '')) {
     if (fallback !== undefined) {
       return <>{fallback}</>;
     }

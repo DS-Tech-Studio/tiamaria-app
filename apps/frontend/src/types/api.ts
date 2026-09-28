@@ -8,7 +8,7 @@ export interface ApiResponse<T> {
 }
 
 // Estructura de usuario/sesión
-export type Role = 'ADMIN' | 'VENDEDOR';
+export type Role = 'ADMIN' | 'VENDEDOR' | 'CLIENTE';
 
 export interface User {
   id: string;

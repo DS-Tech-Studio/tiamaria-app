@@ -59,7 +59,7 @@ export default function Header({ userName, showUsersLink, onLogout }: HeaderProp
 
       <div className="fixed left-2 top-2 z-50 flex max-w-[calc(100vw-1rem)] items-center gap-1.5 rounded-xl border border-rojizo/70 bg-guinda/95 px-2 py-1.5 text-[11px] shadow-lg shadow-profundo/40 ring-1 ring-caramelo/15 backdrop-blur-md sm:left-3 sm:top-3 sm:gap-2 sm:px-2.5 sm:py-2 sm:text-sm">
         <span className="max-w-32 truncate border-r border-rojizo/60 pr-1.5 font-serif font-semibold tracking-wide text-blanco sm:max-w-40 sm:pr-2">
-          {userName}
+          {userName || 'Usuario'}
         </span>
         <button
           type="button"
