@@ -1,22 +1,22 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Header from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
 
 export default function MainLayout() {
   const { user, logout } = useAuth();
+  const isProductsPage = useLocation().pathname === '/productos';
 
   return (
-    <div className="flex h-screen w-full flex-col justify-between overflow-hidden text-white">
+    <div className="flex h-screen w-full flex-col overflow-hidden text-white">
       <Header
-        userName={user?.fullName}
+        userName={user?.fullName ?? user?.email ?? 'Usuario'}
         showUsersLink={user?.role === 'ADMIN'}
         onLogout={logout}
       />
-      
-      {/* El main toma el espacio exacto entre Header y Footer sin empujar la pantalla */}
-      <main className="flex-1 overflow-y-auto pt-24 pb-4">
-        <div className="mx-auto h-full w-full max-w-7xl px-6 flex flex-col">
+
+      <main className={`flex min-h-0 flex-1 overflow-y-auto pt-24 pb-4 lg:overflow-hidden ${isProductsPage ? 'scrollbar-hidden' : ''}`}>
+        <div className="mx-auto flex min-h-full w-full max-w-7xl flex-col px-6 lg:h-full">
           <Outlet />
         </div>
       </main>
