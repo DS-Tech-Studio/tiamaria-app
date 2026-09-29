@@ -41,6 +41,12 @@ export const PencilIcon: React.FC<{ className?: string }> = ({ className = 'h-4 
   </svg>
 );
 
+export const TrashIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16M10 11v6m4-6v6M5 7l1 14h12l1-14M9 7V4h6v3" />
+  </svg>
+);
+
 export const MapPinIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1116 0z" />

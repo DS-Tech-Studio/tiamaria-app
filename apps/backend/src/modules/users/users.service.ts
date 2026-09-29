@@ -1,8 +1,13 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
+import { Order } from '../orders/entities/order.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -16,7 +21,9 @@ export class UsersService {
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { email, password, name, role } = createUserDto;
 
-    const existingUser = await this.userRepository.findOne({ where: { email } });
+    const existingUser = await this.userRepository.findOne({
+      where: { email },
+    });
     if (existingUser) {
       throw new ConflictException('El correo electrónico ya está registrado');
     }
@@ -32,9 +39,7 @@ export class UsersService {
     });
 
     await this.userRepository.save(user);
-
-    delete (user as { password_hash?: string }).password_hash;
-    return user;
+    return this.findOne(user.id);
   }
 
   async findAll(): Promise<User[]> {
@@ -85,28 +90,49 @@ export class UsersService {
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
-    const { password, ...rest } = updateUserDto;
+    const rest = updateUserDto;
 
-    if (password) {
-      const salt = await bcrypt.genSalt(10);
-      user.password_hash = await bcrypt.hash(password, salt);
+    if (rest.email && rest.email !== user.email) {
+      const existingUser = await this.userRepository.findOne({
+        where: { email: rest.email },
+      });
+      if (existingUser) {
+        throw new ConflictException('El correo electrónico ya está registrado');
+      }
     }
 
     Object.assign(user, rest);
-    return this.userRepository.save(user);
+    await this.userRepository.save(user);
+    return this.findOne(id);
   }
 
-    async toggleStatus(id: string): Promise<User> {
+  async toggleStatus(id: string): Promise<User> {
     const user = await this.findOne(id);
     user.is_active = !user.is_active;
-    return this.userRepository.save(user);
+    await this.userRepository.save(user);
+    return this.findOne(id);
+  }
+
+  async remove(id: string): Promise<void> {
+    const user = await this.findOne(id);
+    const orderCount = await this.userRepository.manager
+      .getRepository(Order)
+      .count({ where: { seller_id: id } });
+
+    if (orderCount > 0) {
+      throw new ConflictException(
+        'No se puede eliminar un usuario con órdenes registradas',
+      );
     }
 
-    async findByEmail(email: string): Promise<User | null> {
-      return this.userRepository.findOne({ where: { email } });
-    }
+    await this.userRepository.remove(user);
+  }
 
-    async updateLastLogin(id: string): Promise<void> {
-      await this.userRepository.update(id, { last_login_at: new Date() });
-    }
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { email } });
+  }
+
+  async updateLastLogin(id: string): Promise<void> {
+    await this.userRepository.update(id, { last_login_at: new Date() });
+  }
 }
