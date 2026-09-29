@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderStatus } from './entities/order.entity';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -37,6 +38,15 @@ export class OrdersController {
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.ordersService.findOne(id);
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateOrderDto: UpdateOrderDto,
+    @Req() req: { user: User },
+  ) {
+    return this.ordersService.updateOrder(id, updateOrderDto, req.user);
   }
 
   @Roles(UserRole.ADMIN)

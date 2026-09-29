@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
@@ -11,6 +12,7 @@ import { OrderItem } from './entities/order-item.entity';
 import { Product } from '../products/entities/product.entity';
 import { Client } from '../clients/entities/client.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 import { User, UserRole } from '../users/entities/user.entity';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { FirebaseService } from '../notifications/firebase.service';
@@ -187,6 +189,101 @@ export class OrdersService {
     }
 
     return order;
+  }
+
+  async updateOrder(
+    id: string,
+    updateOrderDto: UpdateOrderDto,
+    user: User,
+  ): Promise<Order> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const order = await queryRunner.manager.findOne(Order, {
+        where: { id },
+        relations: { items: true },
+      });
+
+      if (!order) {
+        throw new NotFoundException(`Pedido con ID ${id} no encontrado`);
+      }
+      if (user.role !== UserRole.ADMIN && order.seller_id !== user.id) {
+        throw new ForbiddenException(
+          'No puedes editar una orden de otro vendedor',
+        );
+      }
+
+      const client = await queryRunner.manager.findOneBy(Client, {
+        id: updateOrderDto.client_id,
+      });
+      if (!client) {
+        throw new NotFoundException(
+          `El cliente con ID ${updateOrderDto.client_id} no existe`,
+        );
+      }
+
+      let totalAmount = 0;
+      const orderItemsToSave: OrderItem[] = [];
+      for (const itemDto of updateOrderDto.items) {
+        const product = await queryRunner.manager.findOneBy(Product, {
+          id: itemDto.product_id,
+        });
+        if (!product) {
+          throw new NotFoundException(
+            `El producto con ID ${itemDto.product_id} no existe`,
+          );
+        }
+
+        const previousItem = order.items.find(
+          (item) => item.product_id === product.id,
+        );
+        if (!product.is_available && !previousItem) {
+          throw new BadRequestException(
+            `El producto "${product.name}" no está disponible actualmente`,
+          );
+        }
+
+        const unitPrice = previousItem
+          ? Number(previousItem.unit_price)
+          : Number(product.price);
+        const subtotal = unitPrice * itemDto.quantity;
+        totalAmount += subtotal;
+        orderItemsToSave.push(
+          queryRunner.manager.create(OrderItem, {
+            order_id: order.id,
+            product_id: product.id,
+            quantity: itemDto.quantity,
+            unit_price: unitPrice,
+            subtotal,
+          }),
+        );
+      }
+
+      await queryRunner.manager.delete(OrderItem, { order_id: order.id });
+      await queryRunner.manager.save(OrderItem, orderItemsToSave);
+      await queryRunner.manager.update(Order, order.id, {
+        client_id: updateOrderDto.client_id,
+        notes: updateOrderDto.notes?.trim() || '',
+        total_amount: totalAmount,
+      });
+
+      await queryRunner.commitTransaction();
+      return this.findOne(order.id);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException ||
+        error instanceof ForbiddenException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error al actualizar el pedido');
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   /**

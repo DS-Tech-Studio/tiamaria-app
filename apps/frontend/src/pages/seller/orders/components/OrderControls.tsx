@@ -1,4 +1,5 @@
 import { SearchIcon } from '../../../../components/ui/icons';
+import { Dropdown } from '../../../../components/ui/Dropdown';
 import { ORDER_STATUS_OPTIONS, type OrderStatus } from '../../../../types/order';
 
 export function TituloFormulario({ text }: { text: string }) {
@@ -30,19 +31,13 @@ export function OrderControls({ search, status, onSearchChange, onStatusChange }
           className="w-full rounded-xl border border-white/10 bg-[#1a070b]/90 py-3 pl-10 pr-3 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-caramelo/60"
         />
       </label>
-      <label className="sr-only" htmlFor="order-status-filter">Filtrar por estado</label>
-      <select
-        id="order-status-filter"
+      <Dropdown
         value={status}
-        onChange={(event) => onStatusChange(event.target.value as OrderStatus | '')}
-        className="w-full rounded-xl border border-white/10 bg-[#1a070b] px-3 py-3 text-sm text-white outline-none focus:border-caramelo/60"
-      >
-        {ORDER_STATUS_OPTIONS.map((option) => (
-          <option key={option.value || 'all'} value={option.value} className="bg-[#1a070b]">
-            {option.label}
-          </option>
-        ))}
-      </select>
+        onChange={(value) => onStatusChange(value as OrderStatus | '')}
+        options={ORDER_STATUS_OPTIONS.map((option) => ({ label: option.label, value: option.value }))}
+        ariaLabel="Filtrar por estado"
+        triggerClassName="rounded-xl border border-white/10 bg-[#1a070b] px-3 py-3 text-sm text-white outline-none focus:border-caramelo/60"
+      />
     </div>
   );
 }

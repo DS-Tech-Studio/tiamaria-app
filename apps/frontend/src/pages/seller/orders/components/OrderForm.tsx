@@ -3,6 +3,7 @@ import { axiosClient } from '../../../../api/axiosClient';
 import type { Client } from '../../../../types/client';
 import type { CreateOrderPayload, Order, ProductOption } from '../../../../types/order';
 import { formatCurrency } from '../../../../types/order';
+import { Dropdown } from '../../../../components/ui/Dropdown';
 import { TituloFormulario } from './OrderControls';
 
 interface DraftItem {
@@ -110,38 +111,40 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
   const selectClass = 'w-full rounded-lg border border-white/10 bg-[#240103] px-3 py-2 text-sm text-white outline-none focus:border-caramelo/70 disabled:opacity-50';
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+    <form onSubmit={handleSubmit} className="flex min-w-0 flex-col gap-2">
       <TituloFormulario text="Registrar orden" />
 
       <label className="flex flex-col gap-1 text-xs font-medium text-white/65">
         Cliente
-        <select className={selectClass} value={clientId} onChange={(event) => setClientId(event.target.value)} disabled={isLoading || clients.length === 0}>
-          <option value="">Seleccionar cliente</option>
-          {clients.map((client) => (
-            <option key={client.id} value={client.id} className="bg-[#1a070b]">
-              {client.business_name || client.contact_name}
-            </option>
-          ))}
-        </select>
+        <Dropdown
+          value={clientId}
+          onChange={setClientId}
+          options={clients.map((client) => ({ value: client.id, label: client.business_name || client.contact_name }))}
+          placeholder="Seleccionar cliente"
+          disabled={isLoading || clients.length === 0}
+          ariaLabel="Seleccionar cliente"
+          triggerClassName={selectClass}
+        />
       </label>
 
-      <div className="grid grid-cols-[minmax(0,1fr)_5rem_auto] items-end gap-2">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_4rem_2.5rem] items-end gap-2">
         <label className="flex min-w-0 flex-col gap-1 text-xs font-medium text-white/65">
           Producto
-          <select className={selectClass} value={productId} onChange={(event) => setProductId(event.target.value)} disabled={isLoading || products.length === 0}>
-            <option value="">Seleccionar</option>
-            {products.map((product) => (
-              <option key={product.id} value={product.id} className="bg-[#1a070b]">
-                {product.name} · {formatCurrency(product.price)}
-              </option>
-            ))}
-          </select>
+          <Dropdown
+            value={productId}
+            onChange={setProductId}
+            options={products.map((product) => ({ value: product.id, label: `${product.name} · ${formatCurrency(product.price)}` }))}
+            placeholder="Seleccionar"
+            disabled={isLoading || products.length === 0}
+            ariaLabel="Seleccionar producto"
+            triggerClassName={selectClass}
+          />
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium text-white/65">
           Cant.
           <input className={selectClass} type="number" min={1} step={1} value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} aria-label="Cantidad" />
         </label>
-        <button type="button" onClick={addItem} disabled={!productId || quantity < 1} aria-label="Agregar producto" title="Agregar producto" className="h-10 rounded-lg border border-caramelo/40 px-3 text-lg font-medium text-caramelo transition hover:bg-caramelo/10 disabled:cursor-not-allowed disabled:opacity-40">
+        <button type="button" onClick={addItem} disabled={!productId || quantity < 1} aria-label="Agregar producto" title="Agregar producto" className="h-10 w-10 rounded-lg border border-caramelo/40 text-lg font-medium text-caramelo transition hover:bg-caramelo/10 disabled:cursor-not-allowed disabled:opacity-40">
           +
         </button>
       </div>
