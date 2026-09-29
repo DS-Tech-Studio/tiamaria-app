@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query, ParseUUIDPipe } from '@nestjs/common';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
+import { UpdateClientDto } from './dto/update-client.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 
@@ -18,5 +19,14 @@ export class ClientsController {
   @Roles(UserRole.ADMIN, UserRole.VENDEDOR)
   findAll(@Query('search') search?: string) {
     return this.clientsService.findAll(search);
+  }
+
+  @Patch(':id')
+  @Roles(UserRole.ADMIN, UserRole.VENDEDOR)
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateClientDto: UpdateClientDto,
+  ) {
+    return this.clientsService.update(id, updateClientDto);
   }
 }

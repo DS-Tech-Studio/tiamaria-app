@@ -35,6 +35,12 @@ export const SearchIcon: React.FC<{ className?: string }> = ({ className = 'h-5 
   </svg>
 );
 
+export const PencilIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="m14 5 5 5M4 20l4.2-.9L19.3 8a2.1 2.1 0 00-3-3L5.1 16.2 4 20z" />
+  </svg>
+);
+
 export const MapPinIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1116 0z" />

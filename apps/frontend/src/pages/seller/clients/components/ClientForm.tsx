@@ -50,15 +50,19 @@ export function ClientForm({ onClientAdded }: ClientFormProps) {
   };
 
   return (
-    <form className="flex flex-col gap-2.5" onSubmit={handleSubmit}>
-      <FormTitle title="Registrar cliente" subtitle="Añade un nuevo contacto al directorio." icon={<UsersIcon className="h-5 w-5 text-caramelo" />} />
+    <form className="grid grid-cols-1 gap-2.5 sm:grid-cols-2" onSubmit={handleSubmit}>
+      <div className="sm:col-span-2">
+        <FormTitle title="Registrar cliente" subtitle="Añade un nuevo contacto al directorio." icon={<UsersIcon className="h-5 w-5 text-caramelo" />} />
+      </div>
       <InputFlotante inputSize="sm" label="Nombre de contacto" value={formData.contact_name} onChange={(event) => updateField('contact_name', event.target.value)} required maxLength={100} icon={<UserIcon />} />
       <InputFlotante inputSize="sm" label="Negocio" value={formData.business_name} onChange={(event) => updateField('business_name', event.target.value)} maxLength={100} icon={<UsersIcon />} />
       <InputFlotante inputSize="sm" label="Teléfono" value={formData.phone} onChange={(event) => updateField('phone', event.target.value)} required maxLength={20} icon={<PhoneIcon />} />
       <InputFlotante inputSize="sm" label="Dirección" value={formData.address} onChange={(event) => updateField('address', event.target.value)} required icon={<MapPinIcon />} />
-      <label className="flex flex-col gap-1 text-xs text-white/70">Notas<textarea className="min-h-16 resize-y rounded-xl border border-[#e4d3ca] bg-[#f8efe9] px-3 py-2 text-sm text-[#240103] outline-none transition focus:border-[#D57642] focus:ring-2 focus:ring-[#D57642]/25" value={formData.notes} onChange={(event) => updateField('notes', event.target.value)} placeholder="Notas adicionales" rows={2} /></label>
-      {error && <p className="text-sm text-red-300">{error}</p>}
-      <BotonSubmit size="sm" isLoading={isSaving} loadingText="Guardando cliente" icon={<UsersIcon className="h-4 w-4" />}>Guardar cliente</BotonSubmit>
+      <label className="flex flex-col gap-1 text-xs text-white/70 sm:col-span-2">Notas<textarea className="min-h-16 resize-y rounded-xl border border-[#e4d3ca] bg-[#f8efe9] px-3 py-2 text-sm text-[#240103] outline-none transition focus:border-[#D57642] focus:ring-2 focus:ring-[#D57642]/25" value={formData.notes} onChange={(event) => updateField('notes', event.target.value)} placeholder="Notas adicionales" rows={2} /></label>
+      {error && <p className="text-sm text-red-300 sm:col-span-2">{error}</p>}
+      <div className="sm:col-span-2">
+        <BotonSubmit size="sm" isLoading={isSaving} loadingText="Guardando cliente" icon={<UsersIcon className="h-4 w-4" />}>Guardar cliente</BotonSubmit>
+      </div>
     </form>
   );
 }

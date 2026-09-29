@@ -3,6 +3,7 @@ import { axiosClient } from '../../../api/axiosClient';
 import { NotesModal } from '../../../components/ui/NotesModal';
 import { ClientCard } from './components/ClientCard';
 import { ClientForm } from './components/ClientForm';
+import { ClientEditModal } from './components/ClientEditModal';
 import type { Client } from '../../../types/client';
 import { ClientSearch } from './components/ClientSearch';
 
@@ -10,6 +11,7 @@ export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedNotes, setSelectedNotes] = useState<string | null>(null);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -51,6 +53,12 @@ export default function ClientsPage() {
     setIsNotesOpen(true);
   };
 
+  const handleClientUpdated = (updatedClient: Client) => {
+    setClients((current) => current.map((client) => client.id === updatedClient.id ? updatedClient : client));
+    setEditingClient(null);
+    setError('');
+  };
+
   return (
     <div className="flex w-full flex-col gap-8 pb-10 lg:h-full lg:min-h-0 lg:overflow-hidden">
       <header className="border-b border-white/10 pb-5">
@@ -80,7 +88,7 @@ export default function ClientsPage() {
             {!isLoading && !error && filteredClients.length > 0 && (
               <div className="grid gap-4">
               {filteredClients.map((client) => (
-                <ClientCard key={client.id} client={client} onOpenMap={handleOpenMap} onOpenNotes={handleOpenNotes} />
+                <ClientCard key={client.id} client={client} onOpenMap={handleOpenMap} onOpenNotes={handleOpenNotes} onEdit={() => setEditingClient(client)} />
               ))}
               </div>
             )}
@@ -99,6 +107,7 @@ export default function ClientsPage() {
         title="Notas del cliente"
         notes={selectedNotes}
       />
+      {editingClient && <ClientEditModal client={editingClient} onClose={() => setEditingClient(null)} onSaved={handleClientUpdated} />}
     </div>
   );
 }
