@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { axiosClient } from '../../../../api/axiosClient';
 import BotonSubmit from '../../../../components/ui/BotonSubmit';
+import { Dropdown } from '../../../../components/ui/Dropdown';
 import FormTitle from '../../../../components/ui/FormTitle';
 import InputFlotante from '../../../../components/ui/InputFlotante';
 import { UserIcon, UsersIcon } from '../../../../components/ui/icons';
@@ -47,10 +48,13 @@ export function UserForm({ onUserAdded }: UserFormProps) {
       <InputFlotante inputSize="sm" label="Contraseña" type="password" value={formData.password} onChange={(event) => setFormData((current) => ({ ...current, password: event.target.value }))} required minLength={6} autoComplete="new-password" />
       <label className="flex flex-col gap-1 text-xs text-white/70">
         Rol
-        <select value={formData.role} onChange={(event) => setFormData((current) => ({ ...current, role: event.target.value as AdminUserRole }))} className="h-[3.25rem] rounded-xl border border-[#e4d3ca] bg-[#f8efe9] px-3 text-sm text-[#240103] outline-none focus:border-[#D57642] focus:ring-2 focus:ring-[#D57642]/25">
-          <option value="VENDEDOR">Vendedor</option>
-          <option value="ADMIN">Administrador</option>
-        </select>
+        <Dropdown
+          value={formData.role}
+          onChange={(value) => setFormData((current) => ({ ...current, role: value as AdminUserRole }))}
+          options={[{ label: 'Vendedor', value: 'VENDEDOR' }, { label: 'Administrador', value: 'ADMIN' }]}
+          ariaLabel="Seleccionar rol"
+          triggerClassName="h-[3.25rem] rounded-xl border border-[#e4d3ca] bg-[#f8efe9] px-3 text-sm text-[#240103] outline-none focus:border-[#D57642] focus:ring-2 focus:ring-[#D57642]/25"
+        />
       </label>
       {error && <p className="text-sm text-red-300 sm:col-span-2" role="alert">{error}</p>}
       <div className="sm:col-span-2">

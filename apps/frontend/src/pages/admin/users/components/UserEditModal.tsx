@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { axiosClient } from '../../../../api/axiosClient';
 import BotonSubmit from '../../../../components/ui/BotonSubmit';
+import { Dropdown } from '../../../../components/ui/Dropdown';
 import InputFlotante from '../../../../components/ui/InputFlotante';
 import { PencilIcon, UserIcon } from '../../../../components/ui/icons';
 import type { AdminUser, AdminUserRole } from '../../../../types/admin-user';
@@ -53,10 +54,14 @@ export function UserEditModal({ user, isCurrentUser, onClose, onSaved }: UserEdi
           <InputFlotante inputSize="sm" label="Correo electrónico" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required maxLength={100} />
           <label className="flex flex-col gap-1 text-xs text-white/70">
             Rol
-            <select value={role} onChange={(event) => setRole(event.target.value as AdminUserRole)} disabled={isCurrentUser} className="h-[3.25rem] rounded-xl border border-[#e4d3ca] bg-[#f8efe9] px-3 text-sm text-[#240103] outline-none focus:border-[#D57642] focus:ring-2 focus:ring-[#D57642]/25 disabled:cursor-not-allowed disabled:opacity-60">
-              <option value="VENDEDOR">Vendedor</option>
-              <option value="ADMIN">Administrador</option>
-            </select>
+            <Dropdown
+              value={role}
+              onChange={(value) => setRole(value as AdminUserRole)}
+              options={[{ label: 'Vendedor', value: 'VENDEDOR' }, { label: 'Administrador', value: 'ADMIN' }]}
+              disabled={isCurrentUser}
+              ariaLabel="Seleccionar rol"
+              triggerClassName="h-[3.25rem] rounded-xl border border-[#e4d3ca] bg-[#f8efe9] px-3 text-sm text-[#240103] outline-none focus:border-[#D57642] focus:ring-2 focus:ring-[#D57642]/25 disabled:cursor-not-allowed disabled:opacity-60"
+            />
           </label>
           {error && <p className="rounded-lg border border-red-400/25 bg-red-950/30 px-3 py-2 text-xs text-red-200 sm:col-span-2" role="alert">{error}</p>}
           <div className="flex flex-col-reverse gap-2 sm:col-span-2 sm:flex-row sm:justify-end">
