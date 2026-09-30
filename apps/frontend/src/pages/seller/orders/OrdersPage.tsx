@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { axiosClient } from '../../../api/axiosClient';
 import { NotesModal } from '../../../components/ui/NotesModal';
 import { useAuth } from '../../../context/AuthContext';
@@ -19,6 +19,7 @@ export default function OrdersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const errorRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -34,6 +35,12 @@ export default function OrdersPage() {
 
     void loadOrders();
   }, []);
+
+  useEffect(() => {
+    if (!error) return;
+    errorRef.current?.focus({ preventScroll: true });
+    errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [error]);
 
   const filteredOrders = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -86,7 +93,7 @@ export default function OrdersPage() {
 
           <div className="min-h-0 flex-1 overflow-y-auto pb-4 scrollbar-hidden">
             <div className="space-y-4">
-              {error && <p className="rounded-xl border border-red-400/30 bg-red-950/30 p-4 text-sm text-red-200" role="alert">{error}</p>}
+              {error && <p ref={errorRef} tabIndex={-1} className="rounded-xl border border-red-400/30 bg-red-950/30 p-4 text-sm text-red-200 outline-none focus:ring-2 focus:ring-red-300/40" role="alert">{error}</p>}
               {isLoading && <p className="py-10 text-center text-sm text-white/50">Cargando órdenes...</p>}
               {!isLoading && filteredOrders.length > 0 && filteredOrders.map((order) => (
                 <OrderCard

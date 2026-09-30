@@ -17,6 +17,8 @@ interface OrderCardProps {
 export function OrderCard({ order, userRole, isUpdating, onUpdateStatus, onOpenNotes, onEdit }: OrderCardProps) {
   const clientName = order.client?.business_name || order.client?.contact_name || 'Cliente';
   const createdAt = new Date(order.created_at);
+  const canEditOrder = order.status === 'PENDIENTE'
+    || (order.status === 'EN_PREPARACION' && userRole === 'ADMIN');
 
   return (
     <article className="flex min-w-0 flex-col gap-3 rounded-xl border border-white/10 bg-[#1a070b]/90 p-4 transition hover:border-caramelo/25 sm:p-5">
@@ -35,16 +37,18 @@ export function OrderCard({ order, userRole, isUpdating, onUpdateStatus, onOpenN
             disabled={isUpdating}
             onChange={(status) => onUpdateStatus(order, status)}
           />
-          <button
-            type="button"
-            onClick={onEdit}
-            disabled={isUpdating}
-            aria-label={`Editar orden ${order.code}`}
-            title="Editar orden"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-caramelo/30 bg-caramelo/5 text-caramelo transition hover:border-caramelo hover:bg-caramelo/10 disabled:cursor-wait disabled:opacity-50"
-          >
-            <PencilIcon className="h-3.5 w-3.5" />
-          </button>
+          {canEditOrder && (
+            <button
+              type="button"
+              onClick={onEdit}
+              disabled={isUpdating}
+              aria-label={`Editar orden ${order.code}`}
+              title="Editar orden"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-caramelo/30 bg-caramelo/5 text-caramelo transition hover:border-caramelo hover:bg-caramelo/10 disabled:cursor-wait disabled:opacity-50"
+            >
+              <PencilIcon className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
       </header>
 
