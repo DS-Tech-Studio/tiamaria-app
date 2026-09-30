@@ -138,23 +138,25 @@ export default function ProductsPage() {
       </header>
 
       <div className="grid min-w-0 items-start gap-8 lg:min-h-0 lg:flex-1 lg:grid-cols-12">
-        <section className="min-w-0 rounded-2xl border border-white/10 bg-[#1a070b]/90 p-5 shadow-xl lg:col-span-5">
-          <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-            <FormTitle title="Registrar producto" subtitle="Añade un nuevo artículo al catálogo." icon={<UsersIcon className="h-5 w-5 text-caramelo" />} />
+        {user?.role === 'ADMIN' && (
+          <section className="min-w-0 rounded-2xl border border-white/10 bg-[#1a070b]/90 p-5 shadow-xl lg:col-span-5">
+            <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+              <FormTitle title="Registrar producto" subtitle="Añade un nuevo artículo al catálogo." icon={<UsersIcon className="h-5 w-5 text-caramelo" />} />
 
-            <InputFlotante inputSize="sm" label="Nombre del producto" value={formData.name} onChange={(event) => updateField('name', event.target.value)} required />
-            <InputFlotante inputSize="sm" label="Descripción" value={formData.description} onChange={(event) => updateField('description', event.target.value)} />
-            <InputFlotante inputSize="sm" label="Precio" type="number" min="0" step="0.01" value={formData.price} onChange={(event) => updateField('price', event.target.value)} required />
+              <InputFlotante inputSize="sm" label="Nombre del producto" value={formData.name} onChange={(event) => updateField('name', event.target.value)} required />
+              <InputFlotante inputSize="sm" label="Descripción" value={formData.description} onChange={(event) => updateField('description', event.target.value)} />
+              <InputFlotante inputSize="sm" label="Precio" type="number" min="0" step="0.01" value={formData.price} onChange={(event) => updateField('price', event.target.value)} required />
 
-            {error && <p className="text-sm text-red-300">{error}</p>}
+              {error && <p className="text-sm text-red-300">{error}</p>}
 
-            <BotonSubmit size="sm" isLoading={isSaving} loadingText="Guardando producto" icon={<UsersIcon className="h-4 w-4" />}>
-              Guardar producto
-            </BotonSubmit>
-          </form>
-        </section>
+              <BotonSubmit size="sm" isLoading={isSaving} loadingText="Guardando producto" icon={<UsersIcon className="h-4 w-4" />}>
+                Guardar producto
+              </BotonSubmit>
+            </form>
+          </section>
+        )}
 
-        <section className="flex min-h-0 min-w-0 flex-col gap-5 lg:col-span-7 lg:overflow-hidden">
+        <section className={`flex min-h-0 min-w-0 flex-col gap-5 ${user?.role === 'ADMIN' ? 'lg:col-span-7' : 'lg:col-span-12'} lg:overflow-hidden`}>
           <div className="relative">
             <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-caramelo" />
             <input
