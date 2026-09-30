@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_GUARD } from '@nestjs/core';
 import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -8,6 +9,10 @@ import { UsersModule } from './modules/users/users.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { ProductsModule } from './modules/products/products.module';
 import { OrdersModule } from './modules/orders/orders.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { RolesGuard } from './modules/auth/guards/roles.guard';
 
 @Module({
   imports: [
@@ -39,8 +44,22 @@ import { OrdersModule } from './modules/orders/orders.module';
     ClientsModule,
     ProductsModule,
     OrdersModule,
+    InventoryModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // 1. Guard global para requerir autenticación JWT por defecto
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    // 2. Guard global para evaluar permisos con @Roles()
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}
