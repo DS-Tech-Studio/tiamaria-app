@@ -3,6 +3,7 @@ import { ProtectedRoute } from '../components/ProtectedRoute';
 import { RoleGuard } from '../components/RoleGuard';
 import MainLayout from '../layouts/MainLayout';
 import UsersPage from '../pages/admin/UsersPage';
+import InventoryPage from '../pages/admin/InventoryPage';
 import LoginPage from '../pages/auth/LoginPage';
 import ClientsPage from '../pages/seller/clients/ClientsPage';
 import HomePage from '../pages/seller/home/HomePage';
@@ -22,6 +23,7 @@ export const AppRouter = () => (
 
         <Route element={<RoleGuard allowedRoles={['ADMIN']}><Outlet /></RoleGuard>}>
           <Route path="/usuarios" element={<UsersPage />} />
+          <Route path="/inventario" element={<InventoryPage />} />
         </Route>
       </Route>
     </Route>

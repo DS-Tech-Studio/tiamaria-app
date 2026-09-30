@@ -53,3 +53,34 @@ export const MapPinIcon: React.FC<{ className?: string }> = ({ className = 'h-4 
     <circle cx="12" cy="10" r="2.5" />
   </svg>
 );
+
+export const BoxesIcon: React.FC<{ className?: string }> = ({ className = 'h-5 w-5' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 7.5 7.5 4 7.5-4M12 12v9M8 5.2l8 4.4" />
+  </svg>
+);
+
+export const ArrowLeftIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5m0 0 7-7m-7 7 7 7" />
+  </svg>
+);
+
+export const ArrowUpIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m0 0-7 7m7-7 7 7" />
+  </svg>
+);
+
+export const ArrowDownIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m0 0 7-7m-7 7-7-7" />
+  </svg>
+);
+
+export const HistoryIcon: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 12a9 9 0 1 0 2.6-6.4L3 8m0-5v5h5m4-1v5l3 2" />
+  </svg>
+);
