@@ -10,6 +10,7 @@ import { ClientsModule } from './modules/clients/clients.module';
 import { ProductsModule } from './modules/products/products.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 
@@ -43,6 +44,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     ClientsModule,
     ProductsModule,
     OrdersModule,
+    InventoryModule,
     AuthModule,
   ],
   controllers: [AppController],

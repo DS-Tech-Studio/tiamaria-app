@@ -5,7 +5,9 @@ import {
   IsNumber,
   IsPositive,
   IsBoolean,
+  IsInt,
   MaxLength,
+  Min,
 } from 'class-validator';
 
 export class CreateProductDto {
@@ -25,5 +27,14 @@ export class CreateProductDto {
 
   @IsBoolean()
   @IsOptional()
+  is_active?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
   is_available?: boolean;
+
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  min_stock_alert?: number;
 }

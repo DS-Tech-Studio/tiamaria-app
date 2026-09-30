@@ -1,7 +1,8 @@
-import { IsUUID, IsInt, IsPositive, IsNotEmpty } from 'class-validator';
+import { IsInt, IsPositive, IsNotEmpty, Matches } from 'class-validator';
+import { POSTGRES_UUID_PATTERN } from '../../../common/validators/uuid-format';
 
 export class CreateOrderItemDto {
-  @IsUUID()
+  @Matches(POSTGRES_UUID_PATTERN)
   @IsNotEmpty()
   product_id!: string;
 

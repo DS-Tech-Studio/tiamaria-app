@@ -13,9 +13,10 @@ import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
-import { OrderStatus } from './entities/order.entity';
+import { Order, OrderStatus } from './entities/order.entity';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole, User } from '../users/entities/user.entity';
+import { ProduceOrderDto } from './dto/produce-order.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -54,7 +55,22 @@ export class OrdersController {
   updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateOrderStatusDto: UpdateOrderStatusDto,
+    @Req() req: { user: User },
   ) {
-    return this.ordersService.updateStatus(id, updateOrderStatusDto.status);
+    return this.ordersService.updateStatus(
+      id,
+      updateOrderStatusDto.status,
+      req.user,
+    );
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Post(':id/produce-and-prepare')
+  produceAndPrepare(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ProduceOrderDto,
+    @Req() req: { user: User },
+  ): Promise<Order> {
+    return this.ordersService.produceAndPrepare(id, dto, req.user);
   }
 }

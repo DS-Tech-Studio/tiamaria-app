@@ -1,17 +1,18 @@
 import {
-  IsUUID,
   IsNotEmpty,
   IsString,
   IsOptional,
   IsArray,
   ValidateNested,
   ArrayMinSize,
+  Matches,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateOrderItemDto } from './create-order-item.dto';
+import { POSTGRES_UUID_PATTERN } from '../../../common/validators/uuid-format';
 
 export class CreateOrderDto {
-  @IsUUID()
+  @Matches(POSTGRES_UUID_PATTERN)
   @IsNotEmpty()
   client_id!: string;
 

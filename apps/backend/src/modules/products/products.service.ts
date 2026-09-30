@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -13,14 +13,20 @@ export class ProductsService {
   ) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    const product = this.productRepository.create(createProductDto);
-    return await this.productRepository.save(product);
+    const { is_available, ...productData } = createProductDto;
+    const product = this.productRepository.create({
+      ...productData,
+      is_active: createProductDto.is_active ?? is_available ?? true,
+    });
+    const savedProduct = await this.productRepository.save(product);
+    savedProduct.updateAvailability();
+    return savedProduct;
   }
 
   async findAll(availableOnly?: boolean): Promise<Product[]> {
     if (availableOnly) {
       return await this.productRepository.find({
-        where: { is_available: true },
+        where: { is_active: true, stock_quantity: MoreThan(0) },
         order: { name: 'ASC' },
       });
     }
@@ -40,13 +46,23 @@ export class ProductsService {
 
   async update(id: string, updateProductDto: UpdateProductDto): Promise<Product> {
     const product = await this.findOne(id);
-    this.productRepository.merge(product, updateProductDto);
-    return await this.productRepository.save(product);
+    const { is_available, ...productData } = updateProductDto;
+    this.productRepository.merge(product, {
+      ...productData,
+      ...(updateProductDto.is_active === undefined && is_available !== undefined
+        ? { is_active: is_available }
+        : {}),
+    });
+    const savedProduct = await this.productRepository.save(product);
+    savedProduct.updateAvailability();
+    return savedProduct;
   }
 
   async toggleAvailability(id: string): Promise<Product> {
     const product = await this.findOne(id);
-    product.is_available = !product.is_available;
-    return await this.productRepository.save(product);
+    product.is_active = !product.is_active;
+    const savedProduct = await this.productRepository.save(product);
+    savedProduct.updateAvailability();
+    return savedProduct;
   }
 }
