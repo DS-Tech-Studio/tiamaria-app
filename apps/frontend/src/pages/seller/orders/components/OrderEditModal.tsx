@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { axiosClient } from '../../../../api/axiosClient';
 import { Dropdown } from '../../../../components/ui/Dropdown';
 import type { Client } from '../../../../types/client';
-import type { CreateOrderPayload, Order, ProductOption } from '../../../../types/order';
+import type { Order, ProductOption, UpdateOrderPayload } from '../../../../types/order';
 import { formatCurrency } from '../../../../types/order';
 
 interface DraftItem {
@@ -87,7 +87,7 @@ export function OrderEditModal({ order, onClose, onSaved }: OrderEditModalProps)
       return;
     }
 
-    const payload: CreateOrderPayload = {
+    const payload: UpdateOrderPayload = {
       client_id: clientId,
       notes: notes.trim() || undefined,
       items: items.map((item) => ({ product_id: item.productId, quantity: item.quantity })),

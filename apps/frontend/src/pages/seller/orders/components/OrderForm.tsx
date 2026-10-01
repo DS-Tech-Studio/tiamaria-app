@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { axiosClient } from '../../../../api/axiosClient';
 import type { Client } from '../../../../types/client';
-import type { CreateOrderPayload, Order, ProductOption } from '../../../../types/order';
-import { formatCurrency } from '../../../../types/order';
+import type { CreateOrderPayload, Order, PaymentMethod, ProductOption } from '../../../../types/order';
+import { formatCurrency, ORDER_DISCOUNT_PERCENTAGES } from '../../../../types/order';
 import { Dropdown } from '../../../../components/ui/Dropdown';
 import { TituloFormulario } from './OrderControls';
 
@@ -23,6 +23,9 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
   const [quantity, setQuantity] = useState(1);
   const [items, setItems] = useState<DraftItem[]>([]);
   const [notes, setNotes] = useState('');
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('EFECTIVO');
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -48,13 +51,15 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
     void loadOptions();
   }, []);
 
-  const total = useMemo(
+  const subtotal = useMemo(
     () => items.reduce((sum, item) => {
       const product = products.find((option) => option.id === item.productId);
       return sum + (Number(product?.price) || 0) * item.quantity;
     }, 0),
     [items, products],
   );
+  const discountAmount = Math.round(subtotal * discountPercent) / 100;
+  const total = subtotal - discountAmount;
 
   const addItem = () => {
     if (!productId || quantity < 1) return;
@@ -87,20 +92,45 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
       setError('Selecciona un cliente y agrega al menos un producto.');
       return;
     }
-
-    const payload: CreateOrderPayload = {
-      client_id: clientId,
-      notes: notes.trim() || undefined,
-      items: items.map((item) => ({ product_id: item.productId, quantity: item.quantity })),
-    };
+    if (paymentMethod === 'TRANSFERENCIA' && !receiptFile) {
+      setError('Adjunta la imagen del comprobante para continuar.');
+      return;
+    }
+    if (receiptFile && (!['image/jpeg', 'image/png', 'image/webp'].includes(receiptFile.type) || receiptFile.size > 5 * 1024 * 1024)) {
+      setError('El comprobante debe ser JPG, PNG o WEBP y pesar máximo 5 MB.');
+      return;
+    }
 
     setIsSubmitting(true);
     setError('');
     try {
+      let receiptImageUrl: string | undefined;
+      if (paymentMethod === 'TRANSFERENCIA' && receiptFile) {
+        const formData = new FormData();
+        formData.append('file', receiptFile);
+        const uploadResponse = await axiosClient.post<{ receipt_image_url: string }>(
+          '/orders/receipts',
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } },
+        );
+        receiptImageUrl = uploadResponse.data.receipt_image_url;
+      }
+
+      const payload: CreateOrderPayload = {
+        client_id: clientId,
+        notes: notes.trim() || undefined,
+        payment_method: paymentMethod,
+        receipt_image_url: receiptImageUrl,
+        discount_percent: discountPercent,
+        items: items.map((item) => ({ product_id: item.productId, quantity: item.quantity })),
+      };
       const response = await axiosClient.post<Order>('/orders', payload);
       onOrderCreated(response.data);
       setItems([]);
       setNotes('');
+      setDiscountPercent(0);
+      setPaymentMethod('EFECTIVO');
+      setReceiptFile(null);
     } catch {
       setError('No fue posible registrar la orden. Revisa los datos e inténtalo de nuevo.');
     } finally {
@@ -149,6 +179,40 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
         </button>
       </div>
 
+      <fieldset className="flex flex-col gap-1 text-xs font-medium text-white/65">
+        <legend>Forma de pago</legend>
+        <div className="grid grid-cols-2 gap-2">
+          {(['EFECTIVO', 'TRANSFERENCIA'] as const).map((method) => (
+            <label key={method} className="flex cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-[#240103]/70 px-3 py-2 text-sm text-white">
+              <input
+                type="radio"
+                name="payment-method"
+                value={method}
+                checked={paymentMethod === method}
+                onChange={() => setPaymentMethod(method)}
+                className="accent-caramelo"
+              />
+              {method === 'EFECTIVO' ? 'Efectivo' : 'Transferencia'}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      {paymentMethod === 'TRANSFERENCIA' && (
+        <label className="flex flex-col gap-1 text-xs font-medium text-white/65">
+          Comprobante de transferencia
+          <input
+            key={receiptFile?.name ?? 'empty'}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={(event) => setReceiptFile(event.target.files?.[0] ?? null)}
+            className="w-full rounded-lg border border-white/10 bg-[#240103] px-3 py-2 text-sm text-white file:mr-3 file:rounded-md file:border-0 file:bg-caramelo/15 file:px-2 file:py-1 file:text-caramelo"
+            aria-required="true"
+          />
+          {receiptFile && <span className="truncate text-white/50">{receiptFile.name}</span>}
+        </label>
+      )}
+
       <div className="rounded-xl border border-white/10 bg-[#240103]/70 p-2">
         <div className="mb-1 flex items-center justify-between text-xs font-semibold text-white/65">
           <span>Productos de la orden</span>
@@ -172,9 +236,35 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
             })}
           </ul>
         )}
-        <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-3 text-sm">
-          <span className="font-semibold text-white/70">Total</span>
-          <span className="text-lg font-bold text-caramelo">{formatCurrency(total)}</span>
+        <div className="mt-2 space-y-1 border-t border-white/10 pt-2 text-xs">
+          <div className="flex items-center justify-between text-white/60">
+            <span>Subtotal</span>
+            <span>{formatCurrency(subtotal)}</span>
+          </div>
+          <div className="flex items-center justify-between gap-2 text-white/60">
+            <label htmlFor="order-discount">Descuento</label>
+            <select
+              id="order-discount"
+              value={discountPercent}
+              onChange={(event) => setDiscountPercent(Number(event.target.value))}
+              className="rounded-md border border-white/10 bg-[#240103] px-2 py-1 text-white outline-none focus:border-caramelo/70"
+            >
+              <option value={0}>Sin descuento</option>
+              {ORDER_DISCOUNT_PERCENTAGES.map((percent) => (
+                <option key={percent} value={percent}>{percent}%</option>
+              ))}
+            </select>
+          </div>
+          {discountPercent > 0 && (
+            <div className="flex items-center justify-between text-emerald-300">
+              <span>Ahorras ({discountPercent}%)</span>
+              <span>-{formatCurrency(discountAmount)}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between pt-1 text-sm">
+            <span className="font-semibold text-white/70">Total a pagar</span>
+            <span className="text-lg font-bold text-caramelo">{formatCurrency(total)}</span>
+          </div>
         </div>
       </div>
 
