@@ -39,7 +39,9 @@ export function OrderEditModal({ order, onClose, onSaved }: OrderEditModalProps)
         if (!isCurrent) return;
         setClients(clientsResponse.data);
         setProducts(productsResponse.data);
-        setProductId(productsResponse.data.find((product) => product.is_available)?.id ?? '');
+        setProductId(
+          productsResponse.data.find((product) => product.is_available || product.is_active)?.id ?? '',
+        );
       } catch {
         if (isCurrent) setError('No fue posible cargar clientes y productos para editar la orden.');
       } finally {
@@ -138,7 +140,10 @@ export function OrderEditModal({ order, onClose, onSaved }: OrderEditModalProps)
               <Dropdown
                 value={productId}
                 onChange={setProductId}
-                options={products.filter((product) => product.is_available || order.items?.some((item) => item.product_id === product.id)).map((product) => ({ value: product.id, label: `${product.name} · ${formatCurrency(product.price)}` }))}
+                options={products.filter((product) => product.is_active || order.items?.some((item) => item.product_id === product.id)).map((product) => ({
+                  value: product.id,
+                  label: `${product.name} · ${formatCurrency(product.price)}${!product.is_active ? ' · Desactivado' : product.stock_quantity === 0 ? ' · Agotado' : ''}`,
+                }))}
                 placeholder="Seleccionar"
                 disabled={isLoading || products.length === 0}
                 ariaLabel="Seleccionar producto"

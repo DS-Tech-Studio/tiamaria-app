@@ -7,6 +7,8 @@ export interface ProductOption {
   id: string;
   name: string;
   price: number | string;
+  stock_quantity: number;
+  is_active: boolean;
   is_available: boolean;
 }
 

@@ -25,9 +25,15 @@ export class ProductsController {
   }
 
   @Get()
-  findAll(@Query('available') available?: string) {
+  findAll(
+    @Query('available') available?: string,
+    @Query('includeOutOfStock') includeOutOfStock?: string,
+  ) {
     const isAvailableOnly = available === 'true';
-    return this.productsService.findAll(isAvailableOnly);
+    return this.productsService.findAll(
+      isAvailableOnly,
+      includeOutOfStock === 'true',
+    );
   }
 
   @Get(':id')

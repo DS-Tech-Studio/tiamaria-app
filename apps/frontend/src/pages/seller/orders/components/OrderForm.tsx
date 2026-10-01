@@ -35,12 +35,16 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
       try {
         const [clientsResponse, productsResponse] = await Promise.all([
           axiosClient.get<Client[]>('/clients'),
-          axiosClient.get<ProductOption[]>('/products', { params: { available: true } }),
+          axiosClient.get<ProductOption[]>('/products', { params: { includeOutOfStock: true } }),
         ]);
         setClients(clientsResponse.data);
         setProducts(productsResponse.data);
         setClientId(clientsResponse.data[0]?.id ?? '');
-        setProductId(productsResponse.data[0]?.id ?? '');
+        setProductId(
+          productsResponse.data.find((product) => product.is_available)?.id
+            ?? productsResponse.data[0]?.id
+            ?? '',
+        );
       } catch {
         setError('No fue posible cargar clientes y productos para crear la orden.');
       } finally {
@@ -163,7 +167,10 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
           <Dropdown
             value={productId}
             onChange={setProductId}
-            options={products.map((product) => ({ value: product.id, label: `${product.name} · ${formatCurrency(product.price)}` }))}
+            options={products.map((product) => ({
+              value: product.id,
+              label: `${product.name} · ${formatCurrency(product.price)}${product.stock_quantity === 0 ? ' · Agotado' : ''}`,
+            }))}
             placeholder="Seleccionar"
             disabled={isLoading || products.length === 0}
             ariaLabel="Seleccionar producto"
