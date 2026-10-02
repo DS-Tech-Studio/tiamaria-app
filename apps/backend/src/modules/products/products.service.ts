@@ -23,7 +23,17 @@ export class ProductsService {
     return savedProduct;
   }
 
-  async findAll(availableOnly?: boolean): Promise<Product[]> {
+  async findAll(
+    availableOnly?: boolean,
+    includeOutOfStock?: boolean,
+  ): Promise<Product[]> {
+    if (includeOutOfStock) {
+      return await this.productRepository.find({
+        where: { is_active: true },
+        order: { name: 'ASC' },
+      });
+    }
+
     if (availableOnly) {
       return await this.productRepository.find({
         where: { is_active: true, stock_quantity: MoreThan(0) },

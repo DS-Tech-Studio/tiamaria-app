@@ -8,6 +8,7 @@ export default function MainLayout() {
   const pathname = useLocation().pathname;
   const isProductsPage = pathname === '/productos';
   const isInventoryPage = pathname === '/inventario';
+  const isOrdersPage = pathname === '/ordenes';
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden text-white">
@@ -17,13 +18,13 @@ export default function MainLayout() {
         onLogout={logout}
       />
 
-      <main className={`flex min-h-0 flex-1 min-w-0 overflow-x-hidden overflow-y-auto pt-32 pb-4 sm:pt-24 ${isInventoryPage ? 'lg:overflow-y-auto' : 'lg:overflow-hidden'} ${isProductsPage ? 'scrollbar-hidden' : ''}`}>
-        <div className={`mx-auto flex min-h-full min-w-0 w-full max-w-7xl flex-col px-6 ${isInventoryPage ? 'lg:h-auto' : 'lg:h-full'}`}>
+      <main className={`flex min-h-0 flex-1 min-w-0 overflow-x-hidden overflow-y-auto pt-32 pb-4 sm:pt-24 ${isInventoryPage || isOrdersPage ? 'lg:overflow-y-auto' : 'lg:overflow-hidden'} ${isProductsPage ? 'scrollbar-hidden' : ''}`}>
+        <div className={`mx-auto flex min-h-full min-w-0 w-full ${isOrdersPage ? 'max-w-[96rem]' : 'max-w-7xl'} flex-col px-6 ${isInventoryPage || isOrdersPage ? 'lg:h-auto' : 'lg:h-full'}`}>
           <Outlet />
         </div>
       </main>
 
-      <Footer />
+      {!isOrdersPage && <Footer />}
     </div>
   );
 }

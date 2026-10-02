@@ -18,6 +18,13 @@ export enum OrderStatus {
   CANCELADO = 'CANCELADO',
 }
 
+export enum PaymentMethod {
+  EFECTIVO = 'EFECTIVO',
+  TRANSFERENCIA = 'TRANSFERENCIA',
+}
+
+export const ORDER_DISCOUNT_PERCENTAGES = [5, 10, 15, 20, 25] as const;
+
 @Entity('orders')
 export class Order {
   @PrimaryGeneratedColumn('uuid')
@@ -49,6 +56,22 @@ export class Order {
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   total_amount!: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  discount_amount!: number;
+
+  @Column({ type: 'smallint', default: 0 })
+  discount_percent!: number;
+
+  @Column({
+    type: 'enum',
+    enum: PaymentMethod,
+    default: PaymentMethod.EFECTIVO,
+  })
+  payment_method!: PaymentMethod;
+
+  @Column({ type: 'text', nullable: true })
+  receipt_image_url!: string | null;
 
   @Column({ type: 'text', nullable: true })
   notes!: string;

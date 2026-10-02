@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { axiosClient } from '../../../../api/axiosClient';
 import { Dropdown } from '../../../../components/ui/Dropdown';
 import type { Client } from '../../../../types/client';
-import type { CreateOrderPayload, Order, ProductOption } from '../../../../types/order';
+import type { Order, ProductOption, UpdateOrderPayload } from '../../../../types/order';
 import { formatCurrency } from '../../../../types/order';
 
 interface DraftItem {
@@ -39,7 +39,9 @@ export function OrderEditModal({ order, onClose, onSaved }: OrderEditModalProps)
         if (!isCurrent) return;
         setClients(clientsResponse.data);
         setProducts(productsResponse.data);
-        setProductId(productsResponse.data.find((product) => product.is_available)?.id ?? '');
+        setProductId(
+          productsResponse.data.find((product) => product.is_available || product.is_active)?.id ?? '',
+        );
       } catch {
         if (isCurrent) setError('No fue posible cargar clientes y productos para editar la orden.');
       } finally {
@@ -87,7 +89,7 @@ export function OrderEditModal({ order, onClose, onSaved }: OrderEditModalProps)
       return;
     }
 
-    const payload: CreateOrderPayload = {
+    const payload: UpdateOrderPayload = {
       client_id: clientId,
       notes: notes.trim() || undefined,
       items: items.map((item) => ({ product_id: item.productId, quantity: item.quantity })),
@@ -138,7 +140,10 @@ export function OrderEditModal({ order, onClose, onSaved }: OrderEditModalProps)
               <Dropdown
                 value={productId}
                 onChange={setProductId}
-                options={products.filter((product) => product.is_available || order.items?.some((item) => item.product_id === product.id)).map((product) => ({ value: product.id, label: `${product.name} · ${formatCurrency(product.price)}` }))}
+                options={products.filter((product) => product.is_active || order.items?.some((item) => item.product_id === product.id)).map((product) => ({
+                  value: product.id,
+                  label: `${product.name} · ${formatCurrency(product.price)}${!product.is_active ? ' · Desactivado' : product.stock_quantity === 0 ? ' · Agotado' : ''}`,
+                }))}
                 placeholder="Seleccionar"
                 disabled={isLoading || products.length === 0}
                 ariaLabel="Seleccionar producto"

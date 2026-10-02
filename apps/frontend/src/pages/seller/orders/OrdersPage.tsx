@@ -76,19 +76,19 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="flex min-w-0 w-full flex-col gap-8 pb-10 lg:h-full lg:min-h-0 lg:overflow-hidden">
+    <div className="flex min-w-0 w-full flex-col gap-8 pb-10">
       <header className="border-b border-white/10 pb-5">
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-caramelo">Gestión de ventas</p>
         <h1 className="font-serif text-3xl font-bold text-white md:text-4xl">Órdenes</h1>
         <p className="mt-2 max-w-2xl text-sm text-white/60">Registra pedidos y consulta su avance.</p>
       </header>
 
-      <div className="grid min-w-0 items-start gap-8 lg:min-h-0 lg:flex-1 lg:grid-cols-12 lg:grid-rows-[minmax(0,1fr)]">
-        <section className="min-w-0 rounded-2xl border border-white/10 bg-[#1a070b]/90 p-5 shadow-xl lg:col-span-5 lg:overflow-y-auto lg:scrollbar-hidden">
+      <div className="grid min-w-0 items-start gap-8 lg:grid-cols-12">
+        <section className="min-w-0 rounded-2xl border border-white/10 bg-[#1a070b]/90 p-5 shadow-xl lg:col-span-6">
           <OrderForm onOrderCreated={handleOrderCreated} />
         </section>
 
-        <section className="flex min-h-0 min-w-0 flex-col gap-5 lg:col-span-7 lg:h-full lg:overflow-hidden">
+        <section className="flex min-h-0 min-w-0 flex-col gap-5 lg:col-span-6 lg:max-h-[calc(100vh-12rem)]">
           <OrderControls search={search} status={statusFilter} onSearchChange={setSearch} onStatusChange={setStatusFilter} />
 
           <div className="min-h-0 flex-1 overflow-y-auto pb-4 scrollbar-hidden">

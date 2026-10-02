@@ -7,7 +7,12 @@ import {
 } from '@nestjs/common';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Order, OrderStatus } from './entities/order.entity';
+import {
+  ORDER_DISCOUNT_PERCENTAGES,
+  Order,
+  OrderStatus,
+  PaymentMethod,
+} from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { Product } from '../products/entities/product.entity';
 import { Client } from '../clients/entities/client.entity';
@@ -34,11 +39,50 @@ export class OrdersService {
     private readonly firebaseService: FirebaseService,
   ) {}
 
+  private validatePaymentDetails(
+    paymentMethod: PaymentMethod,
+    receiptImageUrl?: string | null,
+  ): void {
+    if (
+      paymentMethod === PaymentMethod.TRANSFERENCIA &&
+      !receiptImageUrl?.trim()
+    ) {
+      throw new BadRequestException(
+        'Debes adjuntar el comprobante para pagos por transferencia.',
+      );
+    }
+  }
+
+  private validateDiscountPercent(discountPercent: number): void {
+    if (
+      discountPercent !== 0 &&
+      !ORDER_DISCOUNT_PERCENTAGES.includes(
+        discountPercent as (typeof ORDER_DISCOUNT_PERCENTAGES)[number],
+      )
+    ) {
+      throw new BadRequestException('El porcentaje de descuento no es válido.');
+    }
+  }
+
+  private calculateDiscount(subtotal: number, discountPercent: number): number {
+    return Math.round(subtotal * discountPercent) / 100;
+  }
+
   /**
    * Registra una venta transaccional usando QueryRunner.
    */
   async create(createOrderDto: CreateOrderDto, sellerId: string): Promise<Order> {
-    const { client_id, notes, items } = createOrderDto;
+    const {
+      client_id,
+      notes,
+      items,
+      payment_method = PaymentMethod.EFECTIVO,
+      receipt_image_url,
+      discount_percent = 0,
+    } = createOrderDto;
+
+    this.validatePaymentDetails(payment_method, receipt_image_url);
+    this.validateDiscountPercent(discount_percent);
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -64,6 +108,12 @@ export class OrdersService {
         notes,
         status: OrderStatus.PENDIENTE,
         total_amount: 0,
+        discount_percent,
+        payment_method,
+        receipt_image_url:
+          payment_method === PaymentMethod.TRANSFERENCIA
+            ? receipt_image_url!
+            : null,
       });
 
       // Guardar el encabezado para obtener su UUID
@@ -108,8 +158,12 @@ export class OrdersService {
       // 5. Guardar los ítems del pedido
       await queryRunner.manager.save(OrderItem, orderItemsToSave);
 
-      // 6. Actualizar el total_amount acumulado en la orden
-      savedOrder.total_amount = totalAmount;
+      // 6. Aplicar el descuento seleccionado y guardar los importes finales.
+      savedOrder.discount_amount = this.calculateDiscount(
+        totalAmount,
+        discount_percent,
+      );
+      savedOrder.total_amount = totalAmount - savedOrder.discount_amount;
       await queryRunner.manager.save(Order, savedOrder);
 
       // Commit de la transacción SQL
@@ -360,10 +414,27 @@ export class OrdersService {
       }
 
       await queryRunner.manager.save(OrderItem, orderItemsToSave);
+      const paymentMethod =
+        updateOrderDto.payment_method ?? order.payment_method;
+      const receiptImageUrl =
+        updateOrderDto.receipt_image_url ?? order.receipt_image_url;
+      const discountPercent =
+        updateOrderDto.discount_percent ?? order.discount_percent;
+      this.validatePaymentDetails(paymentMethod, receiptImageUrl);
+      this.validateDiscountPercent(discountPercent);
+      const discountAmount = this.calculateDiscount(totalAmount, discountPercent);
+
       await queryRunner.manager.update(Order, order.id, {
         client_id: updateOrderDto.client_id,
         notes: updateOrderDto.notes?.trim() || '',
-        total_amount: totalAmount,
+        payment_method: paymentMethod,
+        receipt_image_url:
+          paymentMethod === PaymentMethod.TRANSFERENCIA
+            ? receiptImageUrl
+            : null,
+        discount_percent: discountPercent,
+        discount_amount: discountAmount,
+        total_amount: totalAmount - discountAmount,
       });
 
       await queryRunner.commitTransaction();
