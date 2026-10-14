@@ -28,17 +28,38 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST', 'localhost'),
-        port: configService.get<number>('DB_PORT', 5432),
-        username: configService.get<string>('DB_USERNAME', 'postgres'),
-        password: String(configService.get<string>('DB_PASSWORD', '')),
-        database: configService.get<string>('DB_NAME', 'tiamaria_db'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: false,
-        autoLoadEntities: true,
-      }),
+      useFactory: (configService: ConfigService) => {
+        const isProduction =
+          configService.get<string>('NODE_ENV') === 'production';
+
+        return {
+          type: 'postgres' as const,
+          host: configService.get<string>(
+            isProduction ? 'DB_PROD_HOST' : 'DB_HOST',
+            'localhost',
+          ),
+          port: configService.get<number>(
+            isProduction ? 'DB_PROD_PORT' : 'DB_PORT',
+            5432,
+          ),
+          username: configService.get<string>(
+            isProduction ? 'DB_PROD_USERNAME' : 'DB_USERNAME',
+            'postgres',
+          ),
+          password: configService.get<string>(
+            isProduction ? 'DB_PROD_PASSWORD' : 'DB_PASSWORD',
+            '',
+          ),
+          database: configService.get<string>(
+            isProduction ? 'DB_PROD_NAME' : 'DB_NAME',
+            'tiamaria_db',
+          ),
+          ssl: isProduction ? { rejectUnauthorized: false } : false,
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          synchronize: false,
+          autoLoadEntities: true,
+        };
+      },
     }),
     UsersModule,
     ClientsModule,
