@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Header from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
+import { OfflineBanner } from '@/components/common/OfflineBanner';
 
 export default function MainLayout() {
   const { user, logout } = useAuth();
@@ -12,6 +13,7 @@ export default function MainLayout() {
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden text-white">
+      <OfflineBanner />
       <Header
         userName={user?.fullName ?? user?.email ?? 'Usuario'}
         showUsersLink={user?.role === 'ADMIN'}

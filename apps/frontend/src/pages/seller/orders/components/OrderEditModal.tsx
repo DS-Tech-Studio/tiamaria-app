@@ -4,6 +4,8 @@ import { Dropdown } from '../../../../components/ui/Dropdown';
 import type { Client } from '../../../../types/client';
 import type { Order, ProductOption, UpdateOrderPayload } from '../../../../types/order';
 import { formatCurrency } from '../../../../types/order';
+import { getCachedClients, getCachedOrderProducts } from '../../../../services/offlineData.service';
+import { useOffline } from '../../../../hooks/useOffline';
 
 interface DraftItem {
   productId: string;
@@ -17,6 +19,7 @@ interface OrderEditModalProps {
 }
 
 export function OrderEditModal({ order, onClose, onSaved }: OrderEditModalProps) {
+  const isOffline = useOffline();
   const [clients, setClients] = useState<Client[]>([]);
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [clientId, setClientId] = useState(order.client_id);
@@ -33,14 +36,14 @@ export function OrderEditModal({ order, onClose, onSaved }: OrderEditModalProps)
     const loadOptions = async () => {
       try {
         const [clientsResponse, productsResponse] = await Promise.all([
-          axiosClient.get<Client[]>('/clients'),
-          axiosClient.get<ProductOption[]>('/products'),
+          getCachedClients(isOffline),
+          getCachedOrderProducts(false, isOffline),
         ]);
         if (!isCurrent) return;
-        setClients(clientsResponse.data);
-        setProducts(productsResponse.data);
+        setClients(clientsResponse);
+        setProducts(productsResponse);
         setProductId(
-          productsResponse.data.find((product) => product.is_available || product.is_active)?.id ?? '',
+          productsResponse.find((product) => product.is_available || product.is_active)?.id ?? '',
         );
       } catch {
         if (isCurrent) setError('No fue posible cargar clientes y productos para editar la orden.');
@@ -53,7 +56,7 @@ export function OrderEditModal({ order, onClose, onSaved }: OrderEditModalProps)
     return () => {
       isCurrent = false;
     };
-  }, []);
+  }, [isOffline]);
 
   const total = useMemo(() => items.reduce((sum, item) => {
     const previousItem = order.items?.find((orderItem) => orderItem.product_id === item.productId);

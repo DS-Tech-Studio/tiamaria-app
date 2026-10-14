@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { axiosClient } from '../../../api/axiosClient';
 import { NotesModal } from '../../../components/ui/NotesModal';
 import { ClientCard } from './components/ClientCard';
 import { ClientForm } from './components/ClientForm';
 import { ClientEditModal } from './components/ClientEditModal';
 import type { Client } from '../../../types/client';
 import { ClientSearch } from './components/ClientSearch';
+import { cacheClients, getCachedClients } from '../../../services/offlineData.service';
+import { useOffline } from '../../../hooks/useOffline';
 
 export default function ClientsPage() {
+  const isOffline = useOffline();
   const [clients, setClients] = useState<Client[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedNotes, setSelectedNotes] = useState<string | null>(null);
@@ -19,8 +21,7 @@ export default function ClientsPage() {
   useEffect(() => {
     const loadClients = async () => {
       try {
-        const response = await axiosClient.get<Client[]>('/clients');
-        setClients(response.data);
+        setClients(await getCachedClients(isOffline));
       } catch {
         setError('No fue posible cargar el directorio de clientes.');
       } finally {
@@ -29,7 +30,15 @@ export default function ClientsPage() {
     };
 
     void loadClients();
-  }, []);
+  }, [isOffline]);
+
+  const updateClients = (update: (current: Client[]) => Client[]) => {
+    setClients((current) => {
+      const updatedClients = update(current);
+      cacheClients(updatedClients);
+      return updatedClients;
+    });
+  };
 
   const filteredClients = useMemo(() => {
     const normalizedTerm = searchTerm.trim().toLowerCase();
@@ -54,7 +63,7 @@ export default function ClientsPage() {
   };
 
   const handleClientUpdated = (updatedClient: Client) => {
-    setClients((current) => current.map((client) => client.id === updatedClient.id ? updatedClient : client));
+    updateClients((current) => current.map((client) => client.id === updatedClient.id ? updatedClient : client));
     setEditingClient(null);
     setError('');
   };
@@ -73,7 +82,7 @@ export default function ClientsPage() {
         <section className="rounded-2xl border border-white/10 bg-[#1a070b]/90 p-5 shadow-xl lg:col-span-5">
           <ClientForm
             onClientAdded={(newClient) => {
-              setClients((currentClients) => [newClient, ...currentClients]);
+              updateClients((currentClients) => [newClient, ...currentClients]);
               setError('');
             }}
           />

@@ -4,6 +4,8 @@ import type { Client } from '../../../../types/client';
 import type { CreateOrderPayload, Order, PaymentMethod, ProductOption } from '../../../../types/order';
 import { formatCurrency, ORDER_DISCOUNT_PERCENTAGES } from '../../../../types/order';
 import { Dropdown } from '../../../../components/ui/Dropdown';
+import { getCachedClients, getCachedOrderProducts } from '../../../../services/offlineData.service';
+import { useOffline } from '../../../../hooks/useOffline';
 import { TituloFormulario } from './OrderControls';
 
 interface DraftItem {
@@ -16,6 +18,7 @@ interface OrderFormProps {
 }
 
 export function OrderForm({ onOrderCreated }: OrderFormProps) {
+  const isOffline = useOffline();
   const [clients, setClients] = useState<Client[]>([]);
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [clientId, setClientId] = useState('');
@@ -34,15 +37,14 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
     const loadOptions = async () => {
       try {
         const [clientsResponse, productsResponse] = await Promise.all([
-          axiosClient.get<Client[]>('/clients'),
-          axiosClient.get<ProductOption[]>('/products', { params: { includeOutOfStock: true } }),
+          getCachedClients(isOffline),
+          getCachedOrderProducts(true, isOffline),
         ]);
-        setClients(clientsResponse.data);
-        setProducts(productsResponse.data);
-        setClientId(clientsResponse.data[0]?.id ?? '');
+        setClients(clientsResponse);
+        setProducts(productsResponse);
         setProductId(
-          productsResponse.data.find((product) => product.is_available)?.id
-            ?? productsResponse.data[0]?.id
+          productsResponse.find((product) => product.is_available)?.id
+            ?? productsResponse[0]?.id
             ?? '',
         );
       } catch {
@@ -53,7 +55,7 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
     };
 
     void loadOptions();
-  }, []);
+  }, [isOffline]);
 
   const subtotal = useMemo(
     () => items.reduce((sum, item) => {

@@ -7,17 +7,9 @@ import FormTitle from '../../../components/ui/FormTitle';
 import InputFlotante from '../../../components/ui/InputFlotante';
 import { BoxesIcon, SearchIcon, UsersIcon } from '../../../components/ui/icons';
 import { formatCurrency } from '../../../types/order';
-
-interface Product {
-  id: string;
-  name: string;
-  description?: string;
-  price: number | string;
-  is_available: boolean;
-  is_active: boolean;
-  stock_quantity: number;
-  min_stock_alert: number;
-}
+import type { Product } from '../../../types/product';
+import { cacheProducts, getCachedProducts } from '../../../services/offlineData.service';
+import { useOffline } from '../../../hooks/useOffline';
 
 interface ProductFormState {
   name: string;
@@ -33,6 +25,7 @@ const initialForm: ProductFormState = {
 
 export default function ProductsPage() {
   const { user } = useAuth();
+  const isOffline = useOffline();
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState<ProductFormState>(initialForm);
@@ -45,8 +38,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const response = await axiosClient.get<Product[]>('/products');
-        setProducts(response.data);
+        setProducts(await getCachedProducts(isOffline));
       } catch {
         setError('No fue posible cargar el catálogo de productos.');
       } finally {
@@ -55,7 +47,15 @@ export default function ProductsPage() {
     };
 
     void loadProducts();
-  }, []);
+  }, [isOffline]);
+
+  const updateProducts = (update: (current: Product[]) => Product[]) => {
+    setProducts((current) => {
+      const updatedProducts = update(current);
+      cacheProducts(updatedProducts);
+      return updatedProducts;
+    });
+  };
 
   const filteredProducts = useMemo(() => {
     const normalized = searchTerm.trim().toLowerCase();
@@ -78,7 +78,7 @@ export default function ProductsPage() {
     setStatusError('');
     try {
       const response = await axiosClient.patch<Product>(`/products/${product.id}/toggle-status`);
-      setProducts((current) => current.map((item) => item.id === product.id ? response.data : item));
+      updateProducts((current) => current.map((item) => item.id === product.id ? response.data : item));
     } catch (requestError) {
       const message = (requestError as { response?: { data?: { message?: string | string[] } } }).response?.data?.message;
       setStatusError(Array.isArray(message) ? message.join(' ') : message || `No fue posible cambiar el estado de ${product.name}.`);
@@ -107,7 +107,7 @@ export default function ProductsPage() {
         is_available: true,
       });
 
-      setProducts((current) => [response.data, ...current]);
+      updateProducts((current) => [response.data, ...current]);
       setFormData(initialForm);
     } catch {
       setError('No se pudo guardar el producto. Revisa los datos e inténtalo de nuevo.');

@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { axiosClient } from '../../api/axiosClient';
 import BotonSubmit from '../../components/ui/BotonSubmit';
 import { ArrowDownIcon, ArrowLeftIcon, ArrowUpIcon, BoxesIcon, HistoryIcon, SearchIcon } from '../../components/ui/icons';
+import { getCachedProducts } from '../../services/offlineData.service';
+import type { Product as CatalogProduct } from '../../types/product';
+import { useOffline } from '../../hooks/useOffline';
 
 type MovementType = 'ENTRADA' | 'SALIDA';
 type MovementReason =
@@ -18,13 +21,7 @@ type MovementReason =
   | 'CANCELACION_PEDIDO'
   | 'AJUSTE_PEDIDO';
 
-interface Product {
-  id: string;
-  name: string;
-  stock_quantity: number;
-  min_stock_alert: number;
-  is_active: boolean;
-}
+type Product = Pick<CatalogProduct, 'id' | 'name' | 'stock_quantity' | 'min_stock_alert' | 'is_active'>;
 
 interface InventoryMovement {
   id: string;
@@ -107,6 +104,7 @@ function formatMovementDate(value: string): string {
 }
 
 export default function InventoryPage() {
+  const isOffline = useOffline();
   const [products, setProducts] = useState<Product[]>([]);
   const [movements, setMovements] = useState<InventoryMovement[]>([]);
   const [activeTab, setActiveTab] = useState<'stock' | 'history'>('stock');
@@ -126,13 +124,16 @@ export default function InventoryPage() {
   useEffect(() => {
     const loadInventory = async () => {
       try {
-        const [productsResponse, movementsResponse] = await Promise.all([
-          axiosClient.get<Product[]>('/products'),
-          axiosClient.get<InventoryMovement[]>('/inventory/movements', { params: { limit: 50 } }),
-        ]);
-        setProducts(productsResponse.data);
+        const productsResponse = await getCachedProducts(isOffline);
+        setProducts(productsResponse);
+        setSelectedProductId((current) => current || productsResponse[0]?.id || '');
+      } catch (requestError) {
+        setError(getErrorMessage(requestError, 'No fue posible cargar el inventario.'));
+      }
+
+      try {
+        const movementsResponse = await axiosClient.get<InventoryMovement[]>('/inventory/movements', { params: { limit: 50 } });
         setMovements(movementsResponse.data);
-        setSelectedProductId((current) => current || productsResponse.data[0]?.id || '');
       } catch (requestError) {
         setError(getErrorMessage(requestError, 'No fue posible cargar el inventario.'));
       } finally {
@@ -141,7 +142,7 @@ export default function InventoryPage() {
     };
 
     void loadInventory();
-  }, []);
+  }, [isOffline]);
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch = productSearch.trim().toLocaleLowerCase('es-MX');
@@ -158,10 +159,10 @@ export default function InventoryPage() {
 
   const refreshInventory = async () => {
     const [productsResponse, movementsResponse] = await Promise.all([
-      axiosClient.get<Product[]>('/products'),
+      getCachedProducts(isOffline),
       axiosClient.get<InventoryMovement[]>('/inventory/movements', { params: { limit: 50 } }),
     ]);
-    setProducts(productsResponse.data);
+    setProducts(productsResponse);
     setMovements(movementsResponse.data);
   };
 
