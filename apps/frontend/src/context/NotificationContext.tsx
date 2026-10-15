@@ -19,8 +19,14 @@ interface NotificationContextProps {
 const NotificationContext = createContext<NotificationContextProps | undefined>(undefined);
 
 // 2. Limpieza de URL para remover '/api/v1' si viene en las variables de entorno
-const rawUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
-const SOCKET_URL = rawUrl.replace(/\/api\/v1\/?$/, '');
+const rawUrl = import.meta.env.PROD
+  ? window.location.origin
+  : import.meta.env.VITE_BACKEND_URL ||
+    import.meta.env.VITE_API_URL ||
+    'http://localhost:3000';
+const SOCKET_URL = import.meta.env.PROD
+  ? rawUrl
+  : rawUrl.replace(/\/api\/v1\/?$/, '');
 
 function getClientDisplayName(client?: SocketOrderNotificationPayload['client']) {
   return client?.business_name || client?.contact_name || client?.name || 'Cliente sin nombre';

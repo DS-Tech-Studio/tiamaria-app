@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_GUARD } from '@nestjs/core';
 import { join } from 'path';
@@ -16,6 +17,10 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '..', 'frontend', 'dist'),
+      exclude: ['/api/{*path}'],
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       // Busca el .env tanto si ejecutas desde la raíz como desde apps/backend
