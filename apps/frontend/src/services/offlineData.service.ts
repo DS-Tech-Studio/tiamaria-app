@@ -18,8 +18,10 @@ function isClientList(value: unknown): value is Client[] {
     isRecord(client)
     && typeof client.id === 'string'
     && typeof client.contact_name === 'string'
-    && typeof client.phone === 'string'
-    && typeof client.address === 'string',
+    && (typeof client.business_name === 'string' || client.business_name === undefined || client.business_name === null)
+    && (typeof client.phone === 'string' || client.phone === undefined || client.phone === null)
+    && (typeof client.address === 'string' || client.address === undefined || client.address === null)
+    && (typeof client.notes === 'string' || client.notes === undefined || client.notes === null),
   );
 }
 

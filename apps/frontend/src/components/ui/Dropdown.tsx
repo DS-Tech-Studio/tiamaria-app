@@ -15,6 +15,8 @@ interface DropdownProps {
   className?: string;
   triggerClassName?: string;
   menuClassName?: string;
+  actionLabel?: string;
+  onActionClick?: () => void;
 }
 
 export function Dropdown({
@@ -27,6 +29,8 @@ export function Dropdown({
   className = '',
   triggerClassName = '',
   menuClassName = '',
+  actionLabel,
+  onActionClick,
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -64,6 +68,19 @@ export function Dropdown({
 
       {isOpen && (
         <div role="listbox" aria-label={ariaLabel} className={`absolute left-0 top-[calc(100%+0.35rem)] z-50 max-h-60 w-full overflow-y-auto rounded-lg border border-white/15 bg-[#1a070b] p-1 shadow-2xl ${menuClassName}`}>
+          {actionLabel && onActionClick && (
+            <button
+              type="button"
+              onClick={() => {
+                onActionClick();
+                setIsOpen(false);
+              }}
+              className="mb-1 flex w-full items-center gap-2 rounded-md border border-caramelo/35 bg-caramelo/10 px-3 py-2 text-left text-sm font-semibold text-caramelo transition hover:bg-caramelo/20"
+            >
+              <span className="text-base leading-none">+</span>
+              {actionLabel}
+            </button>
+          )}
           {options.map((option) => (
             <button
               key={option.value}
