@@ -31,6 +31,9 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+  const [isCreatingClient, setIsCreatingClient] = useState(false);
+  const [quickClient, setQuickClient] = useState({ contact_name: '', business_name: '' });
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -66,6 +69,35 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
   );
   const discountAmount = Math.round(subtotal * discountPercent) / 100;
   const total = subtotal - discountAmount;
+
+  const handleCreateQuickClient = async () => {
+    const contactName = quickClient.contact_name.trim();
+    const businessName = quickClient.business_name.trim();
+
+    if (!contactName) {
+      setError('Escribe el nombre del cliente para continuar.');
+      return;
+    }
+
+    setIsCreatingClient(true);
+    setError('');
+
+    try {
+      const response = await axiosClient.post<Client>('/clients', {
+        contact_name: contactName,
+        business_name: businessName || undefined,
+      });
+
+      setClients((current) => [response.data, ...current]);
+      setClientId(response.data.id);
+      setQuickClient({ contact_name: '', business_name: '' });
+      setIsClientModalOpen(false);
+    } catch {
+      setError('No se pudo crear el cliente rápido. Inténtalo otra vez.');
+    } finally {
+      setIsCreatingClient(false);
+    }
+  };
 
   const addItem = () => {
     if (!productId || quantity < 1) return;
@@ -147,8 +179,54 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
   const selectClass = 'w-full rounded-lg border border-white/10 bg-[#240103] px-3 py-2 text-sm text-white outline-none focus:border-caramelo/70 disabled:opacity-50';
 
   return (
-    <form onSubmit={handleSubmit} className="flex min-w-0 flex-col gap-2">
-      <TituloFormulario text="Registrar orden" />
+    <>
+      {isClientModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3 sm:p-4" role="presentation" onMouseDown={() => setIsClientModalOpen(false)}>
+          <section className="w-full max-w-md rounded-2xl border border-white/10 bg-[#26080e] p-4 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="add-client-order-title" onMouseDown={(event) => event.stopPropagation()}>
+            <header className="mb-4 flex items-start justify-between gap-4 border-b border-white/10 pb-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-caramelo">Cliente</p>
+                <h2 id="add-client-order-title" className="mt-1 font-serif text-xl font-bold text-white">Agregar cliente</h2>
+              </div>
+              <button type="button" onClick={() => setIsClientModalOpen(false)} aria-label="Cerrar formulario de cliente" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xl text-white/55 transition hover:bg-white/10 hover:text-white">×</button>
+            </header>
+
+            <div className="space-y-3">
+              <label className="flex flex-col gap-1 text-xs font-medium text-white/65">
+                Nombre del cliente
+                <input
+                  className={selectClass}
+                  value={quickClient.contact_name}
+                  onChange={(event) => setQuickClient((current) => ({ ...current, contact_name: event.target.value }))}
+                  placeholder="Nombre"
+                  maxLength={100}
+                />
+              </label>
+
+              <label className="flex flex-col gap-1 text-xs font-medium text-white/65">
+                Negocio
+                <input
+                  className={selectClass}
+                  value={quickClient.business_name}
+                  onChange={(event) => setQuickClient((current) => ({ ...current, business_name: event.target.value }))}
+                  placeholder="Opcional"
+                  maxLength={100}
+                />
+              </label>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setIsClientModalOpen(false)} className="rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold text-white/75 transition hover:bg-white/5">Cancelar</button>
+                <button type="button" onClick={handleCreateQuickClient} disabled={isCreatingClient || !quickClient.contact_name.trim()} className="rounded-lg border border-caramelo/30 bg-[#7D2000] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#922a08] disabled:cursor-not-allowed disabled:opacity-50">
+                  {isCreatingClient ? 'Guardando...' : 'Guardar cliente'}
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="flex min-w-0 flex-col gap-2">
+        <TituloFormulario text="Registrar orden" />
 
       <label className="flex flex-col gap-1 text-xs font-medium text-white/65">
         Cliente
@@ -157,9 +235,11 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
           onChange={setClientId}
           options={clients.map((client) => ({ value: client.id, label: client.business_name || client.contact_name }))}
           placeholder="Seleccionar cliente"
-          disabled={isLoading || clients.length === 0}
+          disabled={isLoading}
           ariaLabel="Seleccionar cliente"
           triggerClassName={selectClass}
+          actionLabel="Agregar cliente"
+          onActionClick={() => setIsClientModalOpen(true)}
         />
       </label>
 
@@ -287,5 +367,6 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
         {isLoading ? 'Cargando datos...' : isSubmitting ? 'Registrando...' : 'Registrar orden'}
       </button>
     </form>
+    </>
   );
 }

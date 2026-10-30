@@ -18,11 +18,11 @@ export class Client {
   @Column({ type: 'varchar', length: 100, nullable: true })
   business_name!: string;
 
-  @Column({ type: 'varchar', length: 20 })
-  phone!: string;
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  phone!: string | null;
 
-  @Column({ type: 'text' })
-  address!: string;
+  @Column({ type: 'text', nullable: true })
+  address!: string | null;
 
   @Column({ type: 'text', nullable: true })
   notes!: string;

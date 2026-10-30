@@ -12,13 +12,13 @@ export class CreateClientDto {
   business_name?: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MaxLength(20)
-  phone!: string;
+  phone?: string;
 
   @IsString()
-  @IsNotEmpty()
-  address!: string;
+  @IsOptional()
+  address?: string;
 
   @IsString()
   @IsOptional()
