@@ -24,7 +24,7 @@ export function OrderEditModal({ order, onClose, onSaved }: OrderEditModalProps)
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [clientId, setClientId] = useState(order.client_id);
   const [productId, setProductId] = useState('');
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState('1');
   const [items, setItems] = useState<DraftItem[]>(() => (order.items ?? []).map((item) => ({ productId: item.product_id, quantity: item.quantity })));
   const [notes, setNotes] = useState(order.notes ?? '');
   const [isLoading, setIsLoading] = useState(true);
@@ -66,14 +66,15 @@ export function OrderEditModal({ order, onClose, onSaved }: OrderEditModalProps)
   }, 0), [items, order.items, products]);
 
   const addItem = () => {
-    if (!productId || quantity < 1) return;
+    const nextQuantity = Number(quantity);
+    if (!productId || !Number.isFinite(nextQuantity) || nextQuantity < 1) return;
     setItems((current) => {
       const existing = current.find((item) => item.productId === productId);
       return existing
-        ? current.map((item) => item.productId === productId ? { ...item, quantity: item.quantity + quantity } : item)
-        : [...current, { productId, quantity }];
+        ? current.map((item) => item.productId === productId ? { ...item, quantity: item.quantity + nextQuantity } : item)
+        : [...current, { productId, quantity: nextQuantity }];
     });
-    setQuantity(1);
+    setQuantity('1');
     setError('');
   };
 
@@ -155,9 +156,19 @@ export function OrderEditModal({ order, onClose, onSaved }: OrderEditModalProps)
             </label>
             <label className="flex flex-col gap-1.5 text-xs font-medium text-white/65">
               Cant.
-              <input className={selectClass} type="number" min={1} step={1} value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} aria-label="Cantidad" />
+              <input
+                className={selectClass}
+                type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                min={1}
+                step={1}
+                value={quantity}
+                onChange={(event) => setQuantity(event.target.value)}
+                aria-label="Cantidad"
+              />
             </label>
-            <button type="button" onClick={addItem} disabled={!productId || quantity < 1} aria-label="Agregar producto" className="h-10 rounded-lg border border-caramelo/40 px-3 text-lg font-medium text-caramelo transition hover:bg-caramelo/10 disabled:cursor-not-allowed disabled:opacity-40">+</button>
+            <button type="button" onClick={addItem} disabled={!productId || Number(quantity) < 1} aria-label="Agregar producto" className="h-10 rounded-lg border border-caramelo/40 px-3 text-lg font-medium text-caramelo transition hover:bg-caramelo/10 disabled:cursor-not-allowed disabled:opacity-40">+</button>
           </div>
 
           <div className="rounded-xl border border-white/10 bg-[#240103]/70 p-3">
@@ -176,7 +187,30 @@ export function OrderEditModal({ order, onClose, onSaved }: OrderEditModalProps)
                   return (
                     <li key={item.productId} className="flex items-center gap-2 py-2 text-xs">
                       <span className="min-w-0 flex-1 truncate text-white">{product?.name ?? 'Producto'}</span>
-                      <input className="w-14 rounded-md border border-white/10 bg-[#1a070b] px-2 py-1 text-center text-white outline-none focus:border-caramelo/60" type="number" min={1} step={1} value={item.quantity} onChange={(event) => updateQuantity(item.productId, Number(event.target.value))} aria-label={`Cantidad de ${product?.name ?? 'producto'}`} />
+                      <input
+                        className="w-14 rounded-md border border-white/10 bg-[#1a070b] px-2 py-1 text-center text-white outline-none focus:border-caramelo/60"
+                        type="number"
+                        inputMode="numeric"
+                        min={1}
+                        step={1}
+                        value={item.quantity}
+                        onChange={(event) => {
+                          const nextValue = event.target.value;
+                          if (nextValue === '') {
+                            updateQuantity(item.productId, 0);
+                            return;
+                          }
+
+                          const parsedValue = Number(nextValue);
+                          if (!Number.isFinite(parsedValue) || parsedValue < 1) {
+                            updateQuantity(item.productId, 0);
+                            return;
+                          }
+
+                          updateQuantity(item.productId, parsedValue);
+                        }}
+                        aria-label={`Cantidad de ${product?.name ?? 'producto'}`}
+                      />
                       <span className="w-20 text-right font-semibold text-caramelo">{formatCurrency(unitPrice * item.quantity)}</span>
                       <button type="button" onClick={() => updateQuantity(item.productId, 0)} aria-label={`Quitar ${product?.name ?? 'producto'}`} className="px-1 text-base text-white/45 hover:text-red-300">×</button>
                     </li>

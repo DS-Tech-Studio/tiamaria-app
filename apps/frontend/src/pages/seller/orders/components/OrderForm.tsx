@@ -23,7 +23,7 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [clientId, setClientId] = useState('');
   const [productId, setProductId] = useState('');
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState('1');
   const [items, setItems] = useState<DraftItem[]>([]);
   const [notes, setNotes] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
@@ -100,17 +100,18 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
   };
 
   const addItem = () => {
-    if (!productId || quantity < 1) return;
+    const nextQuantity = Number(quantity);
+    if (!productId || !Number.isFinite(nextQuantity) || nextQuantity < 1) return;
     setItems((current) => {
       const existing = current.find((item) => item.productId === productId);
       if (existing) {
         return current.map((item) => item.productId === productId
-          ? { ...item, quantity: item.quantity + quantity }
+          ? { ...item, quantity: item.quantity + nextQuantity }
           : item);
       }
-      return [...current, { productId, quantity }];
+      return [...current, { productId, quantity: nextQuantity }];
     });
-    setQuantity(1);
+    setQuantity('1');
     setError('');
   };
 
@@ -261,9 +262,19 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium text-white/65">
           Cant.
-          <input className={selectClass} type="number" min={1} step={1} value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} aria-label="Cantidad" />
+          <input
+            className={selectClass}
+            type="number"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            min={1}
+            step={1}
+            value={quantity}
+            onChange={(event) => setQuantity(event.target.value)}
+            aria-label="Cantidad"
+          />
         </label>
-        <button type="button" onClick={addItem} disabled={!productId || quantity < 1} aria-label="Agregar producto" title="Agregar producto" className="h-10 w-10 rounded-lg border border-caramelo/40 text-lg font-medium text-caramelo transition hover:bg-caramelo/10 disabled:cursor-not-allowed disabled:opacity-40">
+        <button type="button" onClick={addItem} disabled={!productId || Number(quantity) < 1} aria-label="Agregar producto" title="Agregar producto" className="h-10 w-10 rounded-lg border border-caramelo/40 text-lg font-medium text-caramelo transition hover:bg-caramelo/10 disabled:cursor-not-allowed disabled:opacity-40">
           +
         </button>
       </div>
@@ -317,7 +328,30 @@ export function OrderForm({ onOrderCreated }: OrderFormProps) {
               return (
                 <li key={item.productId} className="flex items-center gap-2 py-2 text-xs">
                   <span className="min-w-0 flex-1 truncate text-white">{product?.name}</span>
-                  <input className="w-14 rounded-md border border-white/10 bg-[#1a070b] px-2 py-1 text-center text-white outline-none focus:border-caramelo/60" type="number" min={1} step={1} value={item.quantity} onChange={(event) => updateQuantity(item.productId, Number(event.target.value))} aria-label={`Cantidad de ${product?.name}`} />
+                  <input
+                    className="w-14 rounded-md border border-white/10 bg-[#1a070b] px-2 py-1 text-center text-white outline-none focus:border-caramelo/60"
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    step={1}
+                    value={item.quantity}
+                    onChange={(event) => {
+                      const nextValue = event.target.value;
+                      if (nextValue === '') {
+                        updateQuantity(item.productId, 0);
+                        return;
+                      }
+
+                      const parsedValue = Number(nextValue);
+                      if (!Number.isFinite(parsedValue) || parsedValue < 1) {
+                        updateQuantity(item.productId, 0);
+                        return;
+                      }
+
+                      updateQuantity(item.productId, parsedValue);
+                    }}
+                    aria-label={`Cantidad de ${product?.name}`}
+                  />
                   <span className="w-20 text-right font-semibold text-caramelo">{formatCurrency(subtotal)}</span>
                   <button type="button" onClick={() => updateQuantity(item.productId, 0)} aria-label={`Quitar ${product?.name}`} title="Quitar producto" className="px-1 text-base text-white/45 hover:text-red-300">×</button>
                 </li>
